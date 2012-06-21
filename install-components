@@ -56,9 +56,7 @@ packages[kde-utils]="konqueror kcalc"
 #
 # Graphic manipulation packages
 #
-# graphvis
-#
-packages["graphics"]="gimp inkscape imagemagick"
+packages["graphics"]="gimp inkscape imagemagick graphvis"
 
 #
 # Sound manipulation packages
