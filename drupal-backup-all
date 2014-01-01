@@ -8,13 +8,6 @@
 #
 #    0  3  *  *  *  /usr/bin/env PATH=/usr/local/bin:/usr/bin:/bin drupal-backup-all site1 site2 site3
 #
-# Important:
-#
-# Insure that the user who runs this script is a member of the www-data group.
-# If this script is run by a user named 'archive', then:
-#
-#   sudo /usr/sbin/usermod -a -G www-data archive
-#
 # Configuration:
 #
 # Each site named in the commandline arguments must have a Drush site alias
@@ -214,13 +207,10 @@ for site in ${backup_list} ; do
     # autocommit them.
     live_root=$(drush drupal-directory @$site.live:%root)
     drush @$site.live ssh "cd $live_root && git add -A && git commit -m 'Automatic commit by drupal-backup-all script' && git push" 1>&2
-    # Determine which branch is checked out on the live site
-    live_branch=$(drush @$site.live ssh "git branch 2>/dev/null| sed -n '/^\*/s/^\* //p'")
     # Next, make sure backup site has the most recent code.
     (
       cd $(drush drupal-directory @$site.backup)
-      $EXEC git pull origin $live_branch 1>&2
-      $EXEC git checkout $live_branch 1>&2
+      $EXEC git pull 1>&2
     )
     # Move the previous database dump into the history folder,
     # after first compressing it with gzip
@@ -281,7 +271,7 @@ for site in ${backup_list} ; do
     fi
 
     # Make sure that the group for the files remains www-data
-    $EXEC find $(drush drupal-directory @$site.backup) \! -group www-data -exec chgrp www-data {} \;
+    $EXEC chgrp -R www-data $(drush drupal-directory @$site.backup)
 
     # Keep calm and clear the cache, in case any files changed
     $EXEC drush -y @$site.backup cache-clear all
@@ -348,7 +338,7 @@ for site in ${backup_list} ; do
         ) >> $update_notify_file
 
         # Make sure that the group for the files remains www-data
-        $EXEC find $(drush drupal-directory @$site.update) \! -group www-data -exec chgrp www-data {} \;
+        $EXEC chgrp -R www-data $(drush drupal-directory @$site.update)
 
         echo "Update complete for $site" 1>&2
       else

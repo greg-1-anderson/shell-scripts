@@ -23,7 +23,7 @@ for r in $repos ; do
     (
       echo '`git fetch origin`' $r
       cd $r
-      git fetch -q origin master:master
+      git fetch origin
     )
   else
     echo '`git clone --bare '"$vcs_server:$r"'`'
