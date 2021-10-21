@@ -81,6 +81,8 @@ alias short='LC_ALL=C tr -dc "a-km-np-z" </dev/urandom | head -c 8 ; echo'
 alias pyserve='python -m SimpleHTTPServer'
 alias pyserver=pyserve
 
+alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx02.pantheon.io PANTHEON_CERT=$HOME/certs/employee.pem TERMINUS_CACHE_DIR=$HOME/.termineco terminus -Dverify_host_cert=0'
+
 # Run a web server with php
 alias phpserve='php -S 127.0.0.1:8001'
 alias phpserver=phpserve
