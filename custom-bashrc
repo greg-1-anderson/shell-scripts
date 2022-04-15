@@ -87,6 +87,20 @@ alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx02.pantheon.io PANTHEON_CER
 alias phpserve='php -S 127.0.0.1:8001'
 alias phpserver=phpserve
 
+# Switch php version
+function php-switch() {
+  if [ -n "$(ls /usr/local/Cellar/php*/$1* 2>/dev/null)" ] ; then
+    brew unlink php
+    brew link "php@$1"
+  else
+    echo "php $1 not installed."
+    echo
+    echo "Available versions:"
+    # 'brew list --versions php' doesn't quite do the trick for me (only shows one version)
+    find /usr/local/Cellar/php* -type d -maxdepth 1 -print | sed -e 's#/usr/local/Cellar/php[^/]*/*##' | grep '^[0-9.]\+$'
+  fi
+}
+
 if [ "$OS" == "Darwin" ] ; then
   alias ssh-copy-id='ssh-copy-id.sh'
   alias sublime_text='/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text'
