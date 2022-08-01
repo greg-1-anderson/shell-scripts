@@ -84,7 +84,14 @@ alias pyserver=pyserve
 
 alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx02.pantheon.io PANTHEON_CERT=$HOME/certs/employee.pem TERMINUS_CACHE_DIR=$HOME/.termineco terminus -Dverify_host_cert=0'
 
-alias yggssh='if [ $(find $TMPDIR/ygg-ssh -mtime -14 -type f -name "host" 2>/dev/null) ];then touch $TMPDIR/ygg-ssh/host; echo "Using cached hostname..."; else echo "Retrieving random hostname..."; mkdir $TMPDIR/ygg-ssh; echo $(gcloud compute instances list --project pantheon-dmz | grep yggdrasil | grep RUNNING | awk "{ print \$1 }" | sort -R | head -n 1).panth.io > $TMPDIR/ygg-ssh/host; fi; ssh $(cat $TMPDIR/ygg-ssh/host)'
+export YGGUSER="greg"
+alias yggssh='if [ $(find $TMPDIR/ygg-ssh -mtime -14 -type f -name "host" 2>/dev/null) ];then touch $TMPDIR/ygg-ssh/host; echo "Using cached hostname..."; else echo "Retrieving random hostname..."; mkdir $TMPDIR/ygg-ssh; echo $(gcloud compute instances list --project pantheon-dmz | grep yggdrasil | grep RUNNING | awk "{ print \$1 }" | sort -R | head -n 1).panth.io > $TMPDIR/ygg-ssh/host; fi; ssh $YGGUSER@$(cat $TMPDIR/ygg-ssh/host)'
+
+alias ygg='yggssh ygg $1'
+
+function curlygg {
+  curl -E$HOME/certs/employee.pem "https://api.live.getpantheon.com:8443/$1"
+}
 
 # Run a web server with php
 alias phpserve='php -S 127.0.0.1:8001'
