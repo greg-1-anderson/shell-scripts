@@ -82,7 +82,7 @@ alias short='LC_ALL=C tr -dc "a-km-np-z" </dev/urandom | head -c 8 ; echo'
 alias pyserve='python -m SimpleHTTPServer'
 alias pyserver=pyserve
 
-alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx02.pantheon.io PANTHEON_CERT=$HOME/certs/employee.pem TERMINUS_CACHE_DIR=$HOME/.termineco terminus -Dverify_host_cert=0'
+alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx01.pantheon.io PANTHEON_CERT=$HOME/certs/employee.pem TERMINUS_CACHE_DIR=$HOME/.termineco terminus -Dverify_host_cert=0'
 
 export YGGUSER="greg"
 alias yggssh='if [ $(find $TMPDIR/ygg-ssh -mtime -14 -type f -name "host" 2>/dev/null) ];then touch $TMPDIR/ygg-ssh/host; echo "Using cached hostname..."; else echo "Retrieving random hostname..."; mkdir $TMPDIR/ygg-ssh; echo $(gcloud compute instances list --project pantheon-dmz | grep yggdrasil | grep RUNNING | awk "{ print \$1 }" | sort -R | head -n 1).panth.io > $TMPDIR/ygg-ssh/host; fi; ssh $YGGUSER@$(cat $TMPDIR/ygg-ssh/host)'
@@ -91,6 +91,11 @@ alias ygg='yggssh ygg $1'
 
 function curlygg {
   curl -E$HOME/certs/employee.pem "https://api.live.getpantheon.com:8443/$1"
+}
+
+# Set 'PANTHEON_SESSION' from browser cookie after url-decoding it
+function pantheonsession() {
+  export PANTHEON_SESSION="$(echo $1 | sed -e 's/%3A/:/g')"
 }
 
 # Run a web server with php
