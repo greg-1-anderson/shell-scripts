@@ -364,7 +364,7 @@ alias uc=uncommitted
 # Ignore "~/." directories and "Libraries"
 function suggest-fdpath {
   echo "Working..."
-  echo $(find . -name ".git" | sed -e 's#^./##' -e 's#/[^/]*/.git$##' | uniq) | tr ' ' ':'
+  echo $(find . -name ".git" -maxdepth 6 -not -path './Library/*' -not -path '*/vendor/*' -not -path './.*' -not -path '*/tmp/*' | sed -e 's#^./##' -e 's#/[^/]*/.git$##' | grep -v '.git' | sort | uniq) | tr ' ' ':'
 }
 
 # Make yubikey work in current terminal window.
