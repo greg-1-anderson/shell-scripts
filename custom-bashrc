@@ -364,7 +364,9 @@ alias uc=uncommitted
 # Ignore "~/." directories and "Libraries"
 function suggest-fdpath {
   echo "Working..."
-  echo $(find . -name ".git" -maxdepth 6 -not -path './Library/*' -not -path '*/vendor/*' -not -path './.*' -not -path '*/tmp/*' | sed -e 's#^./##' -e 's#/[^/]*/.git$##' | grep -v '.git' | sort | uniq) | tr ' ' ':'
+  FDPATH=$(echo $(find . -name ".git" -maxdepth 5 -not -path './Library/*' -not -path '*/vendor/*' -not -path './.*' -not -path '*/tmp/*' 2>/dev/null | sed -e 's#^./##' -e 's#/[^/]*/.git$##' | grep -v '.git' | sort | uniq) | tr ' ' ':')
+  echo
+  echo "export FDPATH=$FDPATH"
 }
 
 # Make yubikey work in current terminal window.
