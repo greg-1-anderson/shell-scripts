@@ -97,6 +97,7 @@ fi
 # Set up some default locations
 [ -z "$UTILISCRIPTS" ]            && export UTILISCRIPTS="$HOME/Code/personal/utiliscripts"
 [ -z "$HISTORYRECALL" ]           && export HISTORYRECALL="$HOME/Code/personal/history-recall"
+[ -z "$FINDDIRECTORY" ]           && export FINDDIRECTORY="$HOME/Code/personal/fd"
 [ -z "$CONFIG" ]                  && export CONFIG="$HOME/Code/personal/config"
 [ -z "$SSH_KEY_ARCHIVE" ]         && export SSH_KEY_ARCHIVE="$INSTALLATION_DATA/ssh_key_archive"
 [ -z "$DESKTOP_BACKGROUND_DIR" ]  && export DESKTOP_BACKGROUND_DIR="$INSTALLATION_DATA/DesktopBackgrounds"
@@ -338,6 +339,34 @@ if [ ! -d "$HISTORYRECALL" ] ; then
   )
 fi
 
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  G E T   F D   A N D   C D D
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+if [ ! -d "$FINDDIRECTORY" ] ; then
+  (
+    mkdir -p "$(dirname "$FINDDIRECTORY")"
+    cd "$(dirname "$FINDDIRECTORY")"
+    # read+write if "find-directory" is in $MAINTAINER, read-only otherwise
+    if [ "${MAINTAINER}" != "${MAINTAINER/find-directory/}" ]
+    then
+      git clone git@github.com:g1a/fd.git
+      if [ $? != 0 ]
+      then
+        echo "Could not clone a r/w copy of fd; cloning a r/o copy instead."
+      fi
+    fi
+
+    if [ ! -d "$FINDDIRECTORY" ] ; then
+      git clone git://github.com/g1a/fd.git
+    fi
+
+	cd $FINDDIRECTORY
+	source fd-install.sh --with-cdd
+  )
+fi
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
