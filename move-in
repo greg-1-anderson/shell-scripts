@@ -294,19 +294,7 @@ if [ ! -d "$UTILISCRIPTS" ] ; then
   (
     mkdir -p "$(dirname "$UTILISCRIPTS")"
     cd "$(dirname "$UTILISCRIPTS")"
-    # read+write if "utiliscripts" is in $MAINTAINER, read-only otherwise
-    if [ "${MAINTAINER}" != "${MAINTAINER/utiliscripts/}" ]
-    then
-      git clone git@github.com:greg-1-anderson/utiliscripts.git
-      if [ $? != 0 ]
-      then
-        echo "Could not clone a r/w copy of utiliscripts; cloning a r/o copy instead."
-      fi
-    fi
-
-    if [ ! -d "$UTILISCRIPTS" ] ; then
-      git clone git://github.com/greg-1-anderson/utiliscripts.git
-    fi
+    git clone https://github.com/greg-1-anderson/utiliscripts.git
   )
 
 fi
@@ -323,19 +311,9 @@ if [ ! -d "$HISTORYRECALL" ] ; then
   (
     mkdir -p "$(dirname "$HISTORYRECALL")"
     cd "$(dirname "$HISTORYRECALL")"
-    # read+write if "history-recall" is in $MAINTAINER, read-only otherwise
-    if [ "${MAINTAINER}" != "${MAINTAINER/history-recall/}" ]
-    then
-      git clone git@github.com:greg-1-anderson/history-recall.git
-      if [ $? != 0 ]
-      then
-        echo "Could not clone a r/w copy of history-recall; cloning a r/o copy instead."
-      fi
-    fi
-
-    if [ ! -d "$HISTORYRECALL" ] ; then
-      git clone git://github.com/greg-1-anderson/history-recall.git
-    fi
+    git clone https://github.com/g1a/history-recall.git
+    cd "$HISTORYRECALL"
+    source history-install.sh
   )
 fi
 
@@ -349,22 +327,9 @@ if [ ! -d "$FINDDIRECTORY" ] ; then
   (
     mkdir -p "$(dirname "$FINDDIRECTORY")"
     cd "$(dirname "$FINDDIRECTORY")"
-    # read+write if "find-directory" is in $MAINTAINER, read-only otherwise
-    if [ "${MAINTAINER}" != "${MAINTAINER/find-directory/}" ]
-    then
-      git clone git@github.com:g1a/fd.git
-      if [ $? != 0 ]
-      then
-        echo "Could not clone a r/w copy of fd; cloning a r/o copy instead."
-      fi
-    fi
-
-    if [ ! -d "$FINDDIRECTORY" ] ; then
-      git clone git://github.com/g1a/fd.git
-    fi
-
-	cd $FINDDIRECTORY
-	source fd-install.sh --with-cdd
+    git clone https://github.com/g1a/fd.git
+	  cd "$FINDDIRECTORY"
+	  source fd-install.sh --with-cdd
   )
 fi
 
@@ -411,7 +376,7 @@ if [ ! -d  "$HOME/Code/open-source/drupal/drush8" ] ; then
     fi
 
     if [ ! -d drush8 ] ; then
-      git clone git://github.com/drush-ops/drush.git
+      git clone https://github.com/drush-ops/drush.git
       pr_remote=origin
     fi
   )
@@ -666,7 +631,6 @@ UTILISCRIPTS_RELATIVE=$(echo $UTILISCRIPTS | sed -e "s|$HOME/||")
 SSH_KEY_ARCHIVE_RELATIVE=$(echo $SSH_KEY_ARCHIVE| sed -e "s|$HOME/||")
 
 # Rewrite the "Bash Customizations" section
-HISTORYRECALL_RELATIVE=$(echo $HISTORYRECALL | sed -e "s|$HOME/||")
 sed -i -e '/Include Bash Customizations/,/End Bash Customizations/ d' "$HOME/.bashrc"
 cat <<- __END__ > /tmp/bashwork
 # Include Bash Customizations
@@ -695,10 +659,6 @@ if [ -d "\$HOME/local/sublime-text-3" ] ; then
 fi
 if [ -f "\$UTILISCRIPTS/custom-bashrc" ]; then
   . "\$UTILISCRIPTS/custom-bashrc"
-fi
-export HISTORYRECALL="\$HOME/$HISTORYRECALL_RELATIVE"
-if [ -f "\$HISTORYRECALL/historyrc" ]; then
-  tty -s && . "\$HISTORYRECALL/historyrc"
 fi
 
 [ "\$PATH" == "\${PATH/\$HOME/}" ] && export PATH="\$HOME/bin:\$PATH"
@@ -900,12 +860,12 @@ fi
 
 # Install Sublime Code Intel plugin
 #if [ ! -d "$SUBLIME_CONFIG_DIR/Packages/SublimeCodeIntel" ] ; then
-#  git clone git://github.com/Kronuz/SublimeCodeIntel.git "$SUBLIME_CONFIG_DIR/Packages/SublimeCodeIntel"
+#  git clone https://github.com/Kronuz/SublimeCodeIntel.git "$SUBLIME_CONFIG_DIR/Packages/SublimeCodeIntel"
 #fi
 
 # Install Sublime PhpDoc plugin
 if [ ! -d "$SUBLIME_CONFIG_DIR/Packages/PhpDoc" ] ; then
-  git clone git://github.com/SublimeText/PhpDoc.git "$SUBLIME_CONFIG_DIR/Packages/PhpDoc"
+  git clone https://github.com/SublimeText/PhpDoc.git "$SUBLIME_CONFIG_DIR/Packages/PhpDoc"
 fi
 
 # Install Sublime Drupal snippets (these are gone now)
@@ -915,7 +875,7 @@ fi
 
 # Install Suplime php lint
 if [ ! -d "$SUBLIME_CONFIG_DIR/Packages/sublimelint" ] ; then
-  git clone git://github.com/lunixbochs/sublimelint.git "$SUBLIME_CONFIG_DIR/Packages/sublimelint"
+  git clone https://github.com/lunixbochs/sublimelint.git "$SUBLIME_CONFIG_DIR/Packages/sublimelint"
 fi
 
 # Install Sublime zen coding plugin (if mercurial is available)
