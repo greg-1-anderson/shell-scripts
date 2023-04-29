@@ -1,0 +1,220 @@
+#!/bin/bash
+
+SITES=""
+BASE_DIR="/var/www"
+BASE_DOMAIN="example.com"
+HTTP_PORT=80
+APACHE_LOG_DIR=/var/log/apache2
+
+FILE_STORE="$HOME/tmp/rsync-files"
+
+verbose=false
+help=false
+
+do_database=true
+do_files=true
+do_local_files_backup=false
+do_apache=true
+
+while [ $# -gt 0 ] ; do
+
+  option=$1
+  shift
+  echo "look at option $option"
+
+  case "$option" in
+    -v | --verbose )
+      verbose=true
+      ;;
+
+    -h | --help )
+      help=true
+      ;;
+
+    --base )
+      BASE_DIR="$1"
+      shift
+      ;;
+
+    --base-domain )
+      BASE_DOMAIN="$1"
+      shift
+      ;;
+
+    --no-database )
+      do_database=false
+      ;;
+
+    --no-files )
+      do_files=false
+      ;;
+
+    --local-files-backup )
+      do_local_files_backup=true
+      ;;
+
+    --db-pw )
+      DB_PASSWORD="$1"
+      shift
+      ;;
+
+    -* )
+      echo "Unknown option $option"
+      exit 1
+      ;;
+
+    *)
+      SITES="$SITES $option"
+      ;;
+  esac
+
+done
+
+
+if $help ; then
+  echo "There is no help"
+  exit 0
+fi
+
+(
+  echo '#!/bin/bash'
+  echo
+  echo 'set -x'
+  echo
+
+  for site in $SITES ; do
+
+    shortname="$(echo $site | sed -e 's/-//g')"
+    env_id=live
+    PROJECT_DIR="$BASE_DIR/$shortname"
+
+    git_url="$(terminus connection:info $site.dev --field=git_url)"
+    mysql_command="$(terminus connection:info $site.$env_id --field=mysql_command)"
+    mysqldump_command="${mysql_command/mysql /mysqldump }"
+    site_id="$(terminus site:info $site --field=id)"
+    site_address="$env_id.$site_id@appserver.$env_id.$site_id.drush.in"
+
+    echo
+    echo "##"
+    echo "## $site"
+    echo "##"
+
+    # Database
+    if $do_database ; then
+      echo
+      echo "# Database"
+      echo "sudo mariadb -e 'create database if not exists $shortname'"
+      echo "$mysqldump_command > $shortname.sql"
+      echo "sudo bash -c 'mariadb $shortname < $shortname.sql'"
+    fi
+
+    # Code
+    echo
+    echo "# Code"
+    echo "if [[ ! -d $PROJECT_DIR/.git ]] ; then git clone $git_url '$PROJECT_DIR' ; else ( cd $PROJECT_DIR && git pull ) ; fi"
+    echo "if [[ ! -f $PROJECT_DIR/index.php ]] && [[ ! -f $PROJECT_DIR/web/index.php ]] ; then ( cd $PROJECT_DIR && composer install ) ; fi"
+
+    # Docroot
+    echo
+    echo "if [[ -d '$PROJECT_DIR/web' ]] ; then WEB_ROOT='$PROJECT_DIR/web'; else WEB_ROOT='$PROJECT_DIR'; fi"
+
+    # Files
+    if $do_files ; then
+      echo
+      echo "# Files"
+      echo "# Note that you might need to change the location of the files. Make sure the web server can write to this directory."
+      echo "rsync -rlIpzv $site_address:/files \$WEB_ROOT/sites/default"
+    fi
+
+    # Local files backup
+    if $do_local_files_backup ; then
+      echo "Backing up files for $shortname locally..."
+      mkdir -p $FILE_STORE/$shortname
+      terminus rsync $site.$env_id:/files $FILE_STORE/$shortname
+    fi
+
+    # Apache vhost
+    if $do_apache ; then
+      echo
+      echo "# Apache vhost (tbd)"
+
+# Write an Apache http.conf HEREDOC into our generated script
+cat << __EOF__
+cat > /tmp/$shortname.conf << EOF
+<VirtualHost *:$HTTP_PORT>
+  ServerAdmin webmaster@localhost
+  ServerName $site.$BASE_DOMAIN
+  ServerAlias www.$site.$BASE_DOMAIN
+  DocumentRoot \$WEB_ROOT
+  ErrorLog $APACHE_LOG_DIR/$shortname-error.log
+  CustomLog $APACHE_LOG_DIR/$shortname-access.log combined
+
+  <Directory \$WEB_ROOT>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride All
+    Require all granted
+  </Directory>
+</VirtualHost>
+EOF
+
+sudo mv -f /tmp/$shortname.conf /etc/apache2/sites-available/$shortname.conf
+
+sudo a2ensite $shortname.conf
+__EOF__
+
+    fi
+
+    # Drupal settings.local.php
+    if [[ -n "$DB_PASSWORD" ]] ; then
+      echo
+      echo "# settings.local.php"
+
+# Write a Drupal local settings.php HEREDOC into our generated script
+HASH_SALT="$(LC_ALL=C tr -dc "AHJ-NP-Za-km-np-z2-9" </dev/urandom | head -c 64)"
+cat << __EOF__
+cat > /tmp/$shortname.settings.php << 'EOF'
+<?php
+
+\$databases['default']['default'] = [
+  'database' => '$shortname',
+  'username' => 'www',
+  'password' => '$DB_PASSWORD',
+  'host' => 'localhost',
+  'port' => '3306',
+  'driver' => 'mysql',
+  'prefix' => '',
+  'collation' => 'utf8mb4_general_ci',
+];
+
+\$settings['hash_salt'] = '$HASH_SALT';
+EOF
+
+sudo mv -f /tmp/$shortname.settings.php \$WEB_ROOT/sites/default/settings.local.php
+__EOF__
+
+cat << __EOF__
+      if ! \$(grep -q settings.local \$WEB_ROOT/sites/default/settings.php) ; then
+
+cat > /tmp/$shortname.include-local.php << 'EOF'
+/**
+ * Inclue local settings file, if available.
+ */
+\$local_settings = __DIR__ . "/settings.local.php";
+if (file_exists(\$local_settings)) {
+  include \$local_settings;
+}
+EOF
+        cat /tmp/$shortname.include-local.php | sudo tee -a \$WEB_ROOT/sites/default/settings.php
+        rm /tmp/$shortname.include-local.php
+      fi
+__EOF__
+
+    fi
+
+  done
+
+  # Restart apache
+  echo
+  echo "# Resart apache"
+  echo "sudo systemctl reload apache2"
+) | tee script.sh
