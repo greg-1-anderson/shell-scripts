@@ -1,10 +1,45 @@
 #!/bin/bash
 
+#
+# Writes a script to export your site to some Linux (e.g. Digital Ocean) context.
+#
+# DANGER: PROTECT RESULTING SCRIPT. Sensitive information such as the password
+# for the Pantheon database are written in plain text in the script.
+#
+# REQUIREMENTS FOR SOURCE SCRIPT (running "exodus" script):
+#
+#    - PHP
+#    - Terminus
+#
+#
+# Usage:
+#
+#    exodus PANTHEON_SITE [PANTHEON_SITE ...]
+#
+# Options:
+#
+#    --base			Base directory where site is located on target system
+#
+#	 --base-domain  Base domain where to serve site from.
+#
+#    --no-database  Omit portion of output script that copies database
+#
+#    --no-files     Omit portion of output script that copies files
+#
+#    --db-pw        Include code in output script to write a settings.local.php file
+#
+#    --output-file  Filename to use to store output script. Defaults to 'export_script.sh'.
+#                   Note that regardless of the valueo of this option, the ouput
+#                   script is always printed to stdout AND written to a file.
+#
+
+
 SITES=""
 BASE_DIR="/var/www"
 BASE_DOMAIN="example.com"
 HTTP_PORT=80
 APACHE_LOG_DIR=/var/log/apache2
+OUTPUT_FILE=export_script.sh
 
 FILE_STORE="$HOME/tmp/rsync-files"
 
@@ -20,7 +55,6 @@ while [ $# -gt 0 ] ; do
 
   option=$1
   shift
-  echo "look at option $option"
 
   case "$option" in
     -v | --verbose )
@@ -58,6 +92,11 @@ while [ $# -gt 0 ] ; do
       shift
       ;;
 
+    --output-file )
+      OUTPUT_FILE="$1"
+      shift
+      ;;
+
     -* )
       echo "Unknown option $option"
       exit 1
@@ -72,12 +111,36 @@ done
 
 
 if $help ; then
-  echo "There is no help"
+  cat $0 | sed -e '1,2d' -e '/^ *$/,$d' | sed -e 's/^#//' -e 's/^ //'
   exit 0
 fi
 
 (
-  echo '#!/bin/bash'
+  echo << __EOF__
+#!/bin/bash
+
+#
+# This script was generated via:
+#
+#  $0 $@
+#
+# See https://github.com/greg-1-anderson/utiliscripts/blob/master/exodus
+#
+__EOF__
+
+if $do_database ; then
+  echo << __EOF__
+#!/bin/bash
+# IMPORTANT NOTE: Database info writting into this script are sensitive;
+# do not distribute to untrusted parties.
+#
+# Also, Pantheon might migrate the database server at any time, which will
+# invalidate the credentials cached here. Re-run the exodus script to update
+# if that happens.
+#
+__EOF__
+fi
+
   echo
   echo 'set -x'
   echo
@@ -217,4 +280,4 @@ __EOF__
   echo
   echo "# Resart apache"
   echo "sudo systemctl reload apache2"
-) | tee script.sh
+) | tee $OUTPUT_FILE
