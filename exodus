@@ -116,7 +116,7 @@ if $help ; then
 fi
 
 (
-  echo << __EOF__
+  cat << __EOF__
 #!/bin/bash
 
 #
@@ -129,7 +129,7 @@ fi
 __EOF__
 
 if $do_database ; then
-  echo << __EOF__
+  cat << __EOF__
 #!/bin/bash
 # IMPORTANT NOTE: Database info writting into this script are sensitive;
 # do not distribute to untrusted parties.
