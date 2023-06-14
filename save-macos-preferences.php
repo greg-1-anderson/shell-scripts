@@ -33,7 +33,13 @@ $properties = [
 	'NSGlobalDomain AppleShowAllExtensions' 			=> 'Finder: show all filename extensions',
 	'com.apple.finder ShowPathbar' 						=> 'Finder > View > Show Path Bar',
 	'com.apple.finder _FXSortFoldersFirst'				=> 'Keep folders on top when sorting by name',
+
+	'com.apple.screencapture location'					=> 'Location to save screenshots',
+	'org.m0k.transmission DownloadLocationConstant'     => 'Location to save downloads',
+	'com.apple.Safari AutoOpenSafeDownloads'			=> 'Prevent Safari from opening ‘safe’ files automatically after downloading',
 ];
+
+$home = getenv('HOME');
 
 print "#!/bin/bash\n\n";
 
@@ -44,16 +50,17 @@ foreach ($properties as $property => $comment) {
 	if ($status == 0) {
 		$type = "-string";
 		$value = implode("\n", $values);
-		if (count($values) > 1) {
-			$value = "'$value'";
-		}
 		if (is_numeric($value)) {
 			$type = "-int";
 			$value = (int)$value;
+			if (($value === 0) || ($value === 1)) {
+			    $type = "-bool";
+			    $value = $value ? 'true' : 'false';
+			}
 		}
-		if (($value === 0) || ($value === 1)) {
-		    $type = "-bool";
-		    $value = $value ? 'true' : 'false';
+		else {
+			$value = str_replace($home, '${HOME}', $value);
+			$value = "'$value'";
 		}
 		if (!empty($comment)) {
 			print "\n# $comment\n";

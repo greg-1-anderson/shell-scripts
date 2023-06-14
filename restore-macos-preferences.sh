@@ -2,7 +2,7 @@
 
 
 # Always show scrollbars
-defaults write NSGlobalDomain AppleShowScrollBars -string Always
+defaults write NSGlobalDomain AppleShowScrollBars -string 'Always'
 
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
@@ -23,10 +23,10 @@ defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
 # System Preferences > Keyboard >
-defaults write NSGlobalDomain KeyRepeat -int 1
+defaults write NSGlobalDomain KeyRepeat -int 5
 
 # System Preferences > Keyboard >
-defaults write NSGlobalDomain InitialKeyRepeat -int 10
+defaults write NSGlobalDomain InitialKeyRepeat -int 26
 
 # System Preferences > Dock > Automatically hide and show the Dock
 defaults write com.apple.dock autohide -bool false
@@ -59,11 +59,17 @@ defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad -string '{
     version = 5;
 }'
 
-# Finder > View > Show Path Bar
+# Finder: show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
 # Finder > View > Show Path Bar
 defaults write com.apple.finder ShowPathbar -bool true
+
+# Keep folders on top when sorting by name
+defaults write com.apple.finder _FXSortFoldersFirst -bool true
+
+# Location to save screenshots
+defaults write com.apple.screencapture location -string '${HOME}/Pictures/Screenshots'
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
