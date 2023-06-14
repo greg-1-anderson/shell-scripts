@@ -229,6 +229,37 @@ function uncommitted {
   done
 }
 
+function show-local-working-copies {
+  for d in $(echo $FDPATH | tr ':' ' ')
+  do
+    if [ "${d:0:1}" != "/" ]
+    then
+      d="$HOME/$d"
+    fi
+    if [ -d "$d/$s" ]
+    then
+      (
+        for p in $(ls -d $d/$s/*/.git 2>/dev/null)
+        do
+          loc="$(echo $(dirname $p) | sed -e 's#//#/#g' -e "s#$HOME#~#")"
+          remote_url="$(cd $(dirname $p) && git config --get remote.origin.url)"
+
+          baseloc="$(basename $loc)"
+          baseurl="$(basename $remote_url .git)"
+
+          if [[ "$baseloc" == "$baseurl" ]]; then
+	          # echo "$loc ($baseloc): $remote_url ($baseurl)"
+	          echo
+	          echo "# $baseloc"
+	          echo "mkdir -p $(dirname $loc)"
+	          echo "cd $(dirname $loc) && git clone $remote_url"
+          fi
+        done
+      )
+    fi
+  done
+}
+
 alias uc=uncommitted
 
 # Make yubikey work in current terminal window.
