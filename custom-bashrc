@@ -68,15 +68,13 @@ alias rmrej='rm `find . -name "*.rej"` `find -name "*.orig"`'
 alias rot13='tr a-zA-Z n-za-mN-ZA-M'
 alias findtabs="find -not -regex '..*/\..*' -exec grep -HP '\t' {} \;"
 alias pull-all='for x in * ; do if [ -d $x/.git ] ; then ( cd $x ; s=$(git status -s); if [ -z "$s" ] ; then echo "Update $x." ; git pull ; else echo "$x is modified; skipping update." ; fi ) fi done'
-alias gbs="git branch --sort=-committerdate"
 alias dr=drush
 alias ..='cd ..'
-alias tnq='tag-next -q && git push --tags'
 alias composer-install-all='for x in $(ls */composer.json) ; do ( cd $(dirname $x) ; echo "====== $x ======" ; composer install ); done'
-alias t1='php $HOME/pantheon/t1/bin/terminus'
 alias cimt='ssh -A cimt.getpantheon.com'
 alias randstr='LC_ALL=C tr -dc "AHJ-NP-Za-km-np-z2-9" </dev/urandom | head -c 64 ; echo'
 alias short='LC_ALL=C tr -dc "a-km-np-z" </dev/urandom | head -c 8 ; echo'
+alias se='subl'
 
 # Run a web server with Python. See: http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
 alias pyserve='python -m SimpleHTTPServer'
@@ -126,69 +124,7 @@ if [ "$OS" == "Darwin" ] ; then
   alias sublime_text='/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text'
 fi
 
-alias goodmorning='ssh -t ga@10.100.100.1 sudo /usr/local/sbin/goodmorning'
-alias goodnight='ssh -t ga@10.100.100.1 sudo /usr/local/sbin/goodnight'
 
-#
-# Git aliases
-#
-chkunstage=$(git config --global alias.unstage)
-if [ -z "$chkunstage" ] ; then
-  git config --global alias.unstage 'reset HEAD --'
-fi
-alias gl='git log --date=short --pretty=format:"%Cred%h %Cblue%cd %Cgreen%an%Creset %s" -12'
-alias gls='git log --pretty=format:"%Cred%h %Cgreen%an%Creset %s" -12'
-alias gs='git status'
-# Todo: make a git alias so this is `git cleanup`
-alias git-cleanup='git branch --merged | grep -v "\*" | xargs -n 1 git branch -d'
-
-# Search the HEAD of every local branch for a pattern
-function grep-branches()
-{
-  git grep $1 $(git show-ref --heads) | grep "refs/heads" | grep $1
-}
-
-#
-# Show recent commits.  Can be used on a single repository,
-# or show all of the commits in many repositories to find out
-# what has changed in a set of projects.
-#
-# Usage, single repository:
-#
-#   cd /path/to/project
-#   recent 3
-#
-# Usage, multiple repositories:
-#
-#   cd /path/to/projects/parent
-#   recent 3
-#
-function recent() {
-  since="${1:-1}"
-  if [ -d .git ]
-  then
-    gl --since="$since days ago"
-  else
-    for d in $(ls -d ./*)
-    do
-      if [ -d "$d/.git" ]
-      then
-      (
-        cd "$d"
-        log=$(gl --since="$since days ago")
-        if [ -n "$log" ]
-        then
-          echo "$(basename $(pwd)):"
-          cat <<< "$log"
-        fi
-      )
-      fi
-    done
-  fi
-}
-
-# Turn the whitelist on and off
-function whitelist() { WHITELIST='--whitelist' ; if [ "x$1" == "xoff" ] ; then WHITELIST='--no-whitelist' ; fi ; sudo /sbin/firewall.sh $WHITELIST --log blocked ; }
 
 function tolower() { tr A-Z a-z <<<$@; }
 function mcd() { mkdir -p "$1" && cd "$1"; }
@@ -199,68 +135,6 @@ function mcd() { mkdir -p "$1" && cd "$1"; }
 function lastweek() {
   svn log "$1" -r {$(date --date="Monday last week" "+%F")}:{$(date --date="Sunday last week" "+%F")} | filter-log-by-user "$2"
 }
-
-# Find repositories in the fd path that have uncommitted changes
-function uncommitted {
-  s="$1"
-  for d in $(echo $FDPATH | tr ':' ' ')
-  do
-    if [ "${d:0:1}" != "/" ]
-    then
-      d="$HOME/$d"
-    fi
-    if [ -d "$d/$s" ]
-    then
-      (
-        for p in $(ls -d $d/$s/*/.git 2>/dev/null)
-        do
-          cd $(dirname $p)
-          diverged="$(git status | grep '\(Your branch and.*have diverged\|Your branch is ahead of\)')"
-          git diff-index --quiet HEAD --
-          if [ $? != 0 ] || [ -n "$diverged" ]
-          then
-            echo
-            echo "$(tput bold)$(tput setaf 1)=== $(pwd | sed -e "s#$HOME#~#") ===$(tput sgr0)"
-            git status
-          fi
-        done
-      )
-    fi
-  done
-}
-
-function show-local-working-copies {
-  for d in $(echo $FDPATH | tr ':' ' ')
-  do
-    if [ "${d:0:1}" != "/" ]
-    then
-      d="$HOME/$d"
-    fi
-    if [ -d "$d/$s" ]
-    then
-      (
-        for p in $(ls -d $d/$s/*/.git 2>/dev/null)
-        do
-          loc="$(echo $(dirname $p) | sed -e 's#//#/#g' -e "s#$HOME#~#")"
-          remote_url="$(cd $(dirname $p) && git config --get remote.origin.url)"
-
-          baseloc="$(basename $loc)"
-          baseurl="$(basename $remote_url .git)"
-
-          if [[ "$baseloc" == "$baseurl" ]]; then
-	          # echo "$loc ($baseloc): $remote_url ($baseurl)"
-	          echo
-	          echo "# $baseloc"
-	          echo "mkdir -p $(dirname $loc)"
-	          echo "cd $(dirname $loc) && [ -d $baseloc ] || git clone $remote_url"
-          fi
-        done
-      )
-    fi
-  done
-}
-
-alias uc=uncommitted
 
 # Make yubikey work in current terminal window.
 function yubi {

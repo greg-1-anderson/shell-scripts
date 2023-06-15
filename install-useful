@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Install some useful projects
+# Install some useful projects (including this one)
 #
 # Usage:
 #
@@ -11,9 +11,48 @@
 # Get the path to the directory this script was ran from
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-
 [ -n "$HISTORYRECALL" ]           || export HISTORYRECALL="$HOME/Code/personal/history-recall"
 [ -n "$FINDDIRECTORY" ]           || export FINDDIRECTORY="$HOME/Code/personal/fd"
+[ -n "$GITBASHRC" ]               || export GITBASHRC="$HOME/Code/personal/git-bashrc"
+
+# .bash_profile is including .bashrc, then we will install to .bashrc.
+INSTALL_TO=".bash_profile"
+if [ ! -f "$INSTALL_TO" ] || grep -q bashrc "$HOME/$INSTALL_TO" ; then
+  INSTALL_TO=".bashrc"
+fi
+
+# Parse options
+while [ $# -gt 0 ] ; do
+  option=$1
+  shift
+
+  case "$option" in
+    --no-history-recall )
+      xeport HISTORYRECALL=""
+      ;;
+
+    --no-fd )
+      export FINDDIRECTORY=""
+      ;;
+
+    --no-git-bashrc )
+      export GITBASHRC=""
+      ;;
+
+    --bashrc )
+      INSTALL_TO=".bashrc"
+      ;;
+
+    --bash_profile )
+      INSTALL_TO=".bash_profile"
+      ;;
+
+    --profile )
+      INSTALL_TO=".profile"
+      ;;
+  esac
+done
+
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -23,7 +62,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo "# Check history-recall..."
 
-if [ ! -d "$HISTORYRECALL" ] ; then
+if [ -n "$HISTORYRECALL" ] && [ ! -d "$HISTORYRECALL" ] ; then
   (
     mkdir -p "$(dirname "$HISTORYRECALL")"
     cd "$(dirname "$HISTORYRECALL")"
@@ -41,13 +80,31 @@ fi
 
 echo "# Check fd..."
 
-if [ ! -d "$FINDDIRECTORY" ] ; then
+if [ -n "$FINDDIRECTORY" ] && [ ! -d "$FINDDIRECTORY" ] ; then
   (
     mkdir -p "$(dirname "$FINDDIRECTORY")"
     cd "$(dirname "$FINDDIRECTORY")"
     git clone https://github.com/g1a/fd.git
-	  cd "$FINDDIRECTORY"
-	  source fd-install.sh --with-cdd
+    cd "$FINDDIRECTORY"
+    source fd-install.sh --with-cdd
+  )
+fi
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  G E T   G I T - B A S H R C
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+echo "# Check git-bashrc..."
+
+if [ -n "$GITBASHRC" ] && [ ! -d "$GITBASHRC" ] ; then
+  (
+    mkdir -p "$(dirname "$GITBASHRC")"
+    cd "$(dirname "$GITBASHRC")"
+    git clone https://github.com/g1a/git-bashrc.git
+    cd "$GITBASHRC"
+    source bashrc-install.sh
   )
 fi
 
@@ -60,7 +117,6 @@ fi
 echo "# Check custom-bashrc..."
 
 CUSTOM_BASHRC="$SCRIPT_DIR/custom-bashrc"
-INSTALL_TO=".bashrc"
 
 # If it looks like the fdrc file is already being sourced, then exit.
 if grep -q custom-bashrc "$HOME/$INSTALL_TO" ; then
@@ -70,8 +126,8 @@ fi
 
 cat <<- __EOF__ >> "$HOME/$INSTALL_TO"
 
-  # Source our custom configuration file from the utiliscripts project.
-  source "$CUSTOM_BASHRC"
+# Source our custom configuration file from the utiliscripts project.
+source "$CUSTOM_BASHRC"
 __EOF__
 
 echo "Installed 'source custom-bashrc' in ~/$INSTALL_TO"
