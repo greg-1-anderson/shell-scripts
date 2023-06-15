@@ -269,6 +269,13 @@ function yubi {
   ssh-add -s /usr/local/lib/opensc-pkcs11.so
 }
 
+# Create a .pem from a .p12
+function p12topem {
+  openssl pkcs12 -in $HOME/certs/employee.p12 -out $HOME/certs/employee.crt.pem -clcerts -nokeys
+  openssl pkcs12 -in $HOME/certs/employee.p12 -out $HOME/certs/employee.key.pem -nocerts -nodes
+  cat $HOME/certs/employee.crt.pem $HOME/certs/employee.key.pem > $HOME/certs/employee.pem
+}
+
 function filter-log-by-user {
   if [ -n "$1" ] ; then
     who="$1"
