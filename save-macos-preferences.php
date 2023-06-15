@@ -12,36 +12,45 @@
 
 // Properties to save
 $properties = [
-	'NSGlobalDomain AppleShowScrollBars'				=> 'Always show scrollbars',
-	'com.apple.LaunchServices LSQuarantine'				=> 'Disable the “Are you sure you want to open this application?” dialog',
-	'NSGlobalDomain NSAutomaticCapitalizationEnabled'	=> 'Disable automatic capitalization as it’s annoying when typing code',
-	'NSGlobalDomain NSAutomaticDashSubstitutionEnabled'	=> 'Disable smart dashes as they’re annoying when typing code',
+	'NSGlobalDomain AppleShowScrollBars'					=> 'Always show scrollbars',
+	'com.apple.LaunchServices LSQuarantine'					=> 'Disable the “Are you sure you want to open this application?” dialog',
+	'NSGlobalDomain NSAutomaticCapitalizationEnabled'		=> 'Disable automatic capitalization as it’s annoying when typing code',
+	'NSGlobalDomain NSAutomaticDashSubstitutionEnabled'		=> 'Disable smart dashes as they’re annoying when typing code',
 	'NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled'	=> 'Disable automatic period substitution as it’s annoying when typing code',
 	'NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled'	=> 'Disable smart quotes as they’re annoying when typing code',
 	'NSGlobalDomain NSAutomaticSpellingCorrectionEnabled'	=> 'Disable auto-correct',
 
-	'NSGlobalDomain KeyRepeat'							=> 'System Preferences > Keyboard >',
-	'NSGlobalDomain InitialKeyRepeat' 					=> 'System Preferences > Keyboard >',
+	'NSGlobalDomain KeyRepeat'								=> 'System Preferences > Keyboard >',
+	'NSGlobalDomain InitialKeyRepeat' 						=> 'System Preferences > Keyboard >',
 
-	'com.apple.dock tilesize'							=> 'System Preferences > Dock > Size',
-	'com.apple.dock magnification'						=> 'System Preferences > Dock > Magnification',
-	'com.apple.dock autohide'							=> 'System Preferences > Dock > Automatically hide and show the Dock',
-	'com.apple.dock show-process-indicators'			=> 'System Preferences > Dock > Show indicators for open applications',
+	'com.apple.dock tilesize'								=> 'System Preferences > Dock > Size',
+	'com.apple.dock magnification'							=> 'System Preferences > Dock > Magnification',
+	'com.apple.dock autohide'								=> 'System Preferences > Dock > Automatically hide and show the Dock',
+	'com.apple.dock show-process-indicators'				=> 'System Preferences > Dock > Show indicators for open applications',
 
 	'com.apple.driver.AppleBluetoothMultitouch.trackpad'	=> 'System Preferences > Accessibility > Mouse & Trackpad',
 
-	'NSGlobalDomain AppleShowAllExtensions' 			=> 'Finder: show all filename extensions',
-	'com.apple.finder ShowPathbar' 						=> 'Finder > View > Show Path Bar',
-	'com.apple.finder _FXSortFoldersFirst'				=> 'Keep folders on top when sorting by name',
+	// For some reason, these do not work, even with 'sudo'
+	'com.apple.universalaccess mouseDriverCursorSize'		=> 'System Preferences > Accessibility > Display > Pointer > Pointer Size',
+	'com.apple.universalaccess cursorFill'					=> 'System Preferences > Accessibility > Display > Pointer > Pointer Fill Color',
 
-	'com.apple.screencapture location'					=> 'Location to save screenshots',
-	'org.m0k.transmission DownloadLocationConstant'     => 'Location to save downloads',
-	'com.apple.Safari AutoOpenSafeDownloads'			=> 'Prevent Safari from opening ‘safe’ files automatically after downloading',
+	'NSGlobalDomain AppleShowAllExtensions' 				=> 'Finder: show all filename extensions',
+	'com.apple.finder ShowPathbar' 							=> 'Finder > View > Show Path Bar',
+	'com.apple.finder _FXSortFoldersFirst'					=> 'Keep folders on top when sorting by name',
+
+	'com.apple.screencapture location'						=> 'Location to save screenshots',
+	'org.m0k.transmission DownloadLocationConstant'     	=> 'Location to save downloads',
+	'com.apple.Safari AutoOpenSafeDownloads'				=> 'Prevent Safari from opening ‘safe’ files automatically after downloading',
 ];
 
 $home = getenv('HOME');
 
-print "#!/bin/bash\n\n";
+// Print script prefix
+print <<< __EOT__
+#!/bin/bash
+
+
+__EOT__;
 
 // Read current value of setting and write out a script to restore it
 foreach ($properties as $property => $comment) {

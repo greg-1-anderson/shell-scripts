@@ -32,7 +32,7 @@ defaults write NSGlobalDomain InitialKeyRepeat -int 26
 defaults write com.apple.dock autohide -bool false
 
 # System Preferences > Accessibility > Mouse & Trackpad
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad -string '{
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad '{
     Clicking = 0;
     DragLock = 0;
     Dragging = 0;
@@ -57,6 +57,17 @@ defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad -string '{
     USBMouseStopsTrackpad = 0;
     UserPreferences = 1;
     version = 5;
+}'
+
+# System Preferences > Accessibility > Display > Pointer > Pointer Size
+defaults write com.apple.universalaccess mouseDriverCursorSize -int 2
+
+# System Preferences > Accessibility > Display > Pointer > Pointer Fill Color
+defaults write com.apple.universalaccess cursorFill '{
+    alpha = 1;
+    blue = 0;
+    green = "0.1491314173";
+    red = 1;
 }'
 
 # Finder: show all filename extensions
