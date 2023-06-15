@@ -252,7 +252,7 @@ function show-local-working-copies {
 	          echo
 	          echo "# $baseloc"
 	          echo "mkdir -p $(dirname $loc)"
-	          echo "cd $(dirname $loc) && git clone $remote_url"
+	          echo "cd $(dirname $loc) && [ -d $baseloc ] || git clone $remote_url"
           fi
         done
       )
