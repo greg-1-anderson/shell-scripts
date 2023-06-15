@@ -47,7 +47,6 @@ brew tap homebrew/cask
 #
 # Useful CLI tools
 #
-brew install bash
 brew install tree
 brew install hub
 brew install wget
@@ -55,6 +54,7 @@ brew install jq
 brew install mkdocs
 brew install bash-completion
 brew install bat
+brew install composer
 
 #
 # Pantheon security
@@ -64,9 +64,9 @@ brew install yubico-piv-tool ykpers opensc
 #
 # Some front-end tools
 #
-brew install node nodejs
-gem install bundler
-gem install foreman
+#brew install node nodejs
+#gem install bundler
+#gem install foreman
 
 # brew install chruby ruby-install
 # ruby-install ruby 2.0
@@ -81,8 +81,9 @@ gem install foreman
 #
 # Some applicatios
 #
-brew install Caskroom/cask/cyberduck
+#brew install Caskroom/cask/cyberduck
 brew cask install gimp
+brew install --cask sublime-text
 
 # Danger -- don't leave this running too long, it will run away
 # with your cpu and all of your memory.  I can't stand the other
