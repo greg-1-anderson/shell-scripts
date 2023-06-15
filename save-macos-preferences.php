@@ -29,6 +29,7 @@ $properties = [
 	'com.apple.dock show-process-indicators'				=> 'System Preferences > Dock > Show indicators for open applications',
 
 	'com.apple.driver.AppleBluetoothMultitouch.trackpad'	=> 'System Preferences > Accessibility > Mouse & Trackpad',
+	'com.google.Chrome AppleEnableSwipeNavigateWithScrolls' => "Don't let mouse-scrolling-twiches get converted into forward/back in Chrome",
 
 	// For some reason, these do not work, even with 'sudo'
 	'com.apple.universalaccess mouseDriverCursorSize'		=> 'System Preferences > Accessibility > Display > Pointer > Pointer Size',
@@ -41,6 +42,8 @@ $properties = [
 	'com.apple.screencapture location'						=> 'Location to save screenshots',
 	'org.m0k.transmission DownloadLocationConstant'     	=> 'Location to save downloads',
 	'com.apple.Safari AutoOpenSafeDownloads'				=> 'Prevent Safari from opening ‘safe’ files automatically after downloading',
+
+	'NSGlobalDomain WebKitDeveloperExtras'					=> 'Add a context menu item for showing the Web Inspector in web views',
 ];
 
 $home = getenv('HOME');
@@ -80,6 +83,9 @@ foreach ($properties as $property => $comment) {
 
 // Print script postscript
 print <<< __EOT__
+
+# Show the ~/Library folder
+chflags nohidden ~/Library
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
