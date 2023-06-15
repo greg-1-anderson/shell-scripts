@@ -1,0 +1,80 @@
+#!/bin/bash
+
+#
+# Install some useful projects
+#
+# Usage:
+#
+#     source install-useful
+#
+
+# Get the path to the directory this script was ran from
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+
+[ -n "$HISTORYRECALL" ]           || export HISTORYRECALL="$HOME/Code/personal/history-recall"
+[ -n "$FINDDIRECTORY" ]           || export FINDDIRECTORY="$HOME/Code/personal/fd"
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  G E T   H I S T O R Y   R E C A L L
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+echo "# Check history-recall..."
+
+if [ ! -d "$HISTORYRECALL" ] ; then
+  (
+    mkdir -p "$(dirname "$HISTORYRECALL")"
+    cd "$(dirname "$HISTORYRECALL")"
+    git clone https://github.com/g1a/history-recall.git
+    cd "$HISTORYRECALL"
+    source history-install.sh
+  )
+fi
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  G E T   F D   A N D   C D D
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+echo "# Check fd..."
+
+if [ ! -d "$FINDDIRECTORY" ] ; then
+  (
+    mkdir -p "$(dirname "$FINDDIRECTORY")"
+    cd "$(dirname "$FINDDIRECTORY")"
+    git clone https://github.com/g1a/fd.git
+	  cd "$FINDDIRECTORY"
+	  source fd-install.sh --with-cdd
+  )
+fi
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  I N S T A L L   C U S T O M   B A S H R C
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+echo "# Check custom-bashrc..."
+
+CUSTOM_BASHRC="$SCRIPT_DIR/custom-bashrc"
+INSTALL_TO=".bashrc"
+
+# If it looks like the fdrc file is already being sourced, then exit.
+if grep -q custom-bashrc "$HOME/$INSTALL_TO" ; then
+  echo "custom-bashrc configuration file is already sourced from ~/$INSTALL_TO)"
+  return
+fi
+
+cat <<- __EOF__ >> "$HOME/$INSTALL_TO"
+
+  # Source our custom configuration file from the utiliscripts project.
+  source "$CUSTOM_BASHRC"
+__EOF__
+
+echo "Installed 'source custom-bashrc' in ~/$INSTALL_TO"
+
+# Source history-recall so that it is available in this shell.
+source "$CUSTOM_BASHRC"
