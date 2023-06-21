@@ -6,10 +6,10 @@ exit 0
 #
 # Barge in to a new system and make it mine.
 #
-#	+ Insures the machine has a public / private key pair
-#	  stored in a location where it will be backed up.
+#  + Insures the machine has a public / private key pair
+#    stored in a location where it will be backed up.
 #
-#	+ Pulls down utiliscripts and adds them to the PATH.
+#  + Pulls down utiliscripts and adds them to the PATH.
 #
 # + Installs Drush, Sublime Text and other useful tools
 #   that I use.
@@ -23,8 +23,8 @@ exit 0
 #
 # Good follow-up commands include:
 #
-#  	base-apt-install
-#	  base-brew-install
+#    base-apt-install
+#    base-brew-install
 #
 # Depending on which platform you're running on.
 #
@@ -40,7 +40,7 @@ fi
 # I don't know that I recommend running this as root, but neither do I prevent it.
 if [ "$USER" == "root" ] && [ "$HOME" != "/root" ]
 then
-	echo "Do not run this script via sudo root"
+  echo "Do not run this script via sudo root"
   exit 1
 fi
 
@@ -66,7 +66,6 @@ if [ -z "$INSTALLATION_DATA_REPO" ] ; then
     export INSTALLATION_DATA_REPO=ga@radium.greenknowe.org:installdata.git
   fi
 fi
-
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -115,7 +114,6 @@ if [ -z "$CONFIG_REPO" ] ; then
   fi
 fi
 
-
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
 #  I N S U R E   S S H   K E Y   P A I R S   A R E   S E T   U P
@@ -140,7 +138,7 @@ fi
 # If we do not have a public/private key pair for this machine, then generate or restore one
 if [ ! -f "$HOME/.ssh/id_$keytype" ]
 then
-	if [ -f "$archive_key" ] && [ -f "${archive_key}.pub" ]
+  if [ -f "$archive_key" ] && [ -f "${archive_key}.pub" ]
   then
     echo "Restoring public / private key pair for $host"
       cp -f "$archive_key" "$HOME/.ssh/id_${keytype}"
@@ -148,16 +146,15 @@ then
       chmod 600 "$HOME/.ssh/id_${keytype}"
       chmod 600 "$HOME/.ssh/id_${keytype}.pub"
   else
-		echo "Generating a public / private key pair for this system; please protect it with a password."
-		ssh-keygen -t $keytype -f "$HOME/.ssh/id_$keytype"
+    echo "Generating a public / private key pair for this system; please protect it with a password."
+    ssh-keygen -t $keytype -f "$HOME/.ssh/id_$keytype"
   fi
 fi
 
 if [ -f "$HOME/.ssh/id_$keytype.pub" ] ; then
-	echo "ssh key fingerprint for public key:"
-	ssh-keygen -lf "$HOME/.ssh/id_$keytype.pub"
+  echo "ssh key fingerprint for public key:"
+  ssh-keygen -lf "$HOME/.ssh/id_$keytype.pub"
 fi
-
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -224,7 +221,6 @@ then
     git commit -m "Automatically create an installdata project to store key pairs in"
   )
 fi
-
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -333,8 +329,8 @@ if [ ! -d "$FINDDIRECTORY" ] ; then
     mkdir -p "$(dirname "$FINDDIRECTORY")"
     cd "$(dirname "$FINDDIRECTORY")"
     git clone https://github.com/g1a/fd.git
-	  cd "$FINDDIRECTORY"
-	  source fd-install.sh --with-cdd
+    cd "$FINDDIRECTORY"
+    source fd-install.sh --with-cdd
   )
 fi
 
@@ -362,7 +358,7 @@ if [ ! -d  "$HOME/Code/open-source/drupal/drush8" ] ; then
       git clone git@github.com:drush-ops/drush.git drush8
       if [ ! -d drush8 ]
       then
-      	echo "Could not clone a r/w copy of drush; cloning a r/o copy instead."
+        echo "Could not clone a r/w copy of drush; cloning a r/o copy instead."
       else
         (
           cd drush8
@@ -433,11 +429,11 @@ for drush_extension in \
     grn-6.x \
   ; do
 
-	extension_shortname=$(echo $drush_extension | sed -e 's|-[0-9]*\.x-*[0-9]*\.*[0-9x]*$||');
+  extension_shortname=$(echo $drush_extension | sed -e 's|-[0-9]*\.x-*[0-9]*\.*[0-9x]*$||');
   extension_destination=$DRUSH_EXTENSIONS/$extension_shortname
   if [ ! -d "$extension_destination" ] ; then
-		(
-			cd "$DRUSH_EXTENSIONS"
+    (
+      cd "$DRUSH_EXTENSIONS"
       # read+write if "extension_shortname" is in $MAINTAINER, read-only otherwise
       if [ -n "$DRUPALORG_USERNAME" ] && [ "${MAINTAINER}" != "${MAINTAINER/$extension_shortname/}" ]
       then
@@ -454,11 +450,11 @@ for drush_extension in \
           fi
         fi
       fi
-			if [ ! -d "$extension_destination" ] ; then
+      if [ ! -d "$extension_destination" ] ; then
         "$DRUSH" --yes pm-download $drush_extension --destination="$extension_destination"
       fi
-		)
-	fi
+    )
+  fi
 
 done
 
@@ -501,13 +497,13 @@ if $HAS_DISPLAY && [ "$OS" != "Darwin" ] ; then
   fi
   if [ -z "$s" ] && [ ! -d "$HOME/local/sublime-text-3" ]; then
 
-  	mkdir -p "$HOME/tmp"
-  	mkdir -p "$HOME/local"
+    mkdir -p "$HOME/tmp"
+    mkdir -p "$HOME/local"
 
-  	wget -O "$HOME/tmp/$sublime_file" "$sublime_url"
-  	tar -xjvf "$HOME/tmp/$sublime_file" -C "$HOME/local"
+    wget -O "$HOME/tmp/$sublime_file" "$sublime_url"
+    tar -xjvf "$HOME/tmp/$sublime_file" -C "$HOME/local"
 
-  	mv "$HOME/local/sublime_text_3" "$HOME/local/sublime-text-3"
+    mv "$HOME/local/sublime_text_3" "$HOME/local/sublime-text-3"
   fi
 
 fi
@@ -524,7 +520,7 @@ echo "# Check bash and drush environments..."
 # Get rid of the old .bash_customizations file if it exists
 #
 if [ -f "$HOME/.bash_customizations" ]; then
-	rm "$HOME/.bash_customizations"
+  rm "$HOME/.bash_customizations"
 fi
 
 # Put in uniform drushrc.php
@@ -702,7 +698,6 @@ if [ "X$chkprofileforbashrc" = "X" ] ; then
   echo 'source .bashrc' >> ~/.profile
 fi
 
-
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
 #  S E T   U P   P R E F E R E N C E S   F O R    V A R I O U S    A P P L I C A T I O N S
@@ -743,7 +738,6 @@ fi
 if [ "$OS" == "Darwin" ] ; then
   SUBLIME_CONFIG_DIR="$HOME/Library/Application Support/Sublime Text 3"
 fi
-
 
 #
 # Copy sublime license file, if one exists in installdata
@@ -891,7 +885,6 @@ fi
 #fi
 
 
-
 #
 # Some non-Mac settings
 #
@@ -903,21 +896,20 @@ if [ "$OS" != "Darwin" ] ; then
 mkdir -p "$HOME/.nedit"
 if [ -f "$HOME/.nedit/nedit.rc" ] ; then
 
-	sed -i "$HOME/.nedit/nedit.rc" \
-		-e 's/^\(nedit.autoWrap: \).*/\1 None/' \
-		-e 's/^\(nedit.openInTab: \).*/\1 False/' \
-		-e 's/^\(nedit.statisticsLine: \).*/\1 True/' \
-		-e 's/^\(nedit.tabDistance: \).*/\1 8/'
-
+  sed -i "$HOME/.nedit/nedit.rc" \
+    -e 's/^\(nedit.autoWrap: \).*/\1 None/' \
+    -e 's/^\(nedit.openInTab: \).*/\1 False/' \
+    -e 's/^\(nedit.statisticsLine: \).*/\1 True/' \
+    -e 's/^\(nedit.tabDistance: \).*/\1 8/'
 
 else
 
-	cat <<- __END__ > "$HOME/.nedit/nedit.rc"
-	nedit.autoWrap: None
-	nedit.openInTab: False
-	nedit.statisticsLine: True
-	nedit.tabDistance: 8
-	__END__
+  cat <<- __END__ > "$HOME/.nedit/nedit.rc"
+  nedit.autoWrap: None
+  nedit.openInTab: False
+  nedit.statisticsLine: True
+  nedit.tabDistance: 8
+  __END__
 
 fi
 fi
@@ -1017,4 +1009,3 @@ if [ -n "$g" ] && [ -n "$d" ] && [ -n "$DISPLAY" ] ; then
 fi
 
 exit 0
-

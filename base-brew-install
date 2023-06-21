@@ -23,7 +23,6 @@ then
   exit 1
 fi
 
-
 #
 # Get brew set up.
 #
@@ -87,7 +86,6 @@ brew install --cask sublime-text
 # clients, though, so oh well.
 # brew install Caskroom/cask/colloquy
 
-
 #
 # Postgres
 #
@@ -116,7 +114,6 @@ brew install --cask sublime-text
 
 # Start PostgreSQL
 # postgres -D /usr/local/var/postgres
-
 
 #
 # Mysql

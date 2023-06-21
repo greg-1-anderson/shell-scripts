@@ -65,7 +65,6 @@ packages["graphics"]="gimp inkscape imagemagick"
 #
 packages["sound"]="audacity"
 
-
 groups["system"]="admin intl network system-gui repository compress"
 # nvidia
 
@@ -128,10 +127,6 @@ packages["ide"]="eclipse" # and netbeans
 
 groups["gui"]="system-gui ${groups[apps]} debug ide"
 
-
-
-
-
 verbose=false
 show=false
 help=false
@@ -143,39 +138,39 @@ help=false
 #
 for option in $* ; do
 
-	case "$option" in
-		-v | --verbose )
-			verbose=true
-			;;
+  case "$option" in
+    -v | --verbose )
+      verbose=true
+      ;;
 
-		--show | --descriptions)
-			show=true
-			;;
+    --show | --descriptions)
+      show=true
+      ;;
 
-		-h | --help )
-			help=true
-			;;
+    -h | --help )
+      help=true
+      ;;
 
-		-* )
-			;;
+    -* )
+      ;;
 
-		*)
-			if [ "x${packages[$option]}" != "x" ] ; then
-				$verbose && echo "Select $option: ${packages[$option]}" >&2
-				install_list[$option]=${packages[$option]}
-			fi
+    *)
+      if [ "x${packages[$option]}" != "x" ] ; then
+        $verbose && echo "Select $option: ${packages[$option]}" >&2
+        install_list[$option]=${packages[$option]}
+      fi
 
-			if [ "x${groups[$option]}" != "x" ] ; then
-				$verbose && echo "Group $option=${groups[$option]}" >&2
-				for i in ${groups[$option]} ; do
-					if [ "x${packages[$i]}" != "x" ] ; then
-						$verbose && echo "Select $i: ${packages[$i]}" >&2
-						install_list[$i]=${packages[$i]}
-					fi
-				done
-			fi
-			;;
-	esac
+      if [ "x${groups[$option]}" != "x" ] ; then
+        $verbose && echo "Group $option=${groups[$option]}" >&2
+        for i in ${groups[$option]} ; do
+          if [ "x${packages[$i]}" != "x" ] ; then
+            $verbose && echo "Select $i: ${packages[$i]}" >&2
+            install_list[$i]=${packages[$i]}
+          fi
+        done
+      fi
+      ;;
+  esac
 
 done
 
@@ -185,46 +180,46 @@ done
 #
 install_sections="${!install_list[@]}"
 if [ "x$install_sections" == "x" ] ; then
-	for i in ${!packages[@]} ; do
-		if [ "x${packages[$i]}" != "x" ] ; then
-			install_list[$i]=${packages[$i]}
-		fi
-	done
+  for i in ${!packages[@]} ; do
+    if [ "x${packages[$i]}" != "x" ] ; then
+      install_list[$i]=${packages[$i]}
+    fi
+  done
 fi
 
 if $help ; then
-	program=$0
-	echo "Usage: ${program##*/} [OPTION]... [CATAGORY]..."
-	echo "Installs packages from specified catagories using apt-get."
-	echo "If no catagories are provided, then all available packages"
-	echo "are installed."
-	echo
-	echo "  --verbose         Show extended output"
-	echo "  --show            Show descriptions of all selected packages"
-	echo "  --no-[CATAGORY]   Do not install anything from the deselected catagory"
-	echo "  --yes-[CATAGORY]  Install the selected catagory"
-	echo
-	echo "Available catagories:"
-	echo
-	for p in ${!packages[@]} ; do
-		echo "  $p: ${packages[$p]}"
-	done
-	echo
-	echo "Catagories may also be selected / deselected using the following group aliases:"
-	echo
-	for g in ${!groups[@]} ; do
-		echo "  $g=${groups[$g]}"
-	done
-	echo
-	echo "Note that in general, [CATAGORY] and --yes-[CATAGORY] are"
-	echo "roughly equivalent, except that --yes-[CATAGORY] takes"
-	echo "precidence over --no-[CATAGORY].  This allows you to select"
-	echo "packages from a deselected group; e.g.:"
-	echo
-	echo "  ${program##*/} --no-programming --yes-java"
-	echo
-	echo "See also the apt-get(8), apt-cache(8) manual pages."
-	exit 0
+  program=$0
+  echo "Usage: ${program##*/} [OPTION]... [CATAGORY]..."
+  echo "Installs packages from specified catagories using apt-get."
+  echo "If no catagories are provided, then all available packages"
+  echo "are installed."
+  echo
+  echo "  --verbose         Show extended output"
+  echo "  --show            Show descriptions of all selected packages"
+  echo "  --no-[CATAGORY]   Do not install anything from the deselected catagory"
+  echo "  --yes-[CATAGORY]  Install the selected catagory"
+  echo
+  echo "Available catagories:"
+  echo
+  for p in ${!packages[@]} ; do
+    echo "  $p: ${packages[$p]}"
+  done
+  echo
+  echo "Catagories may also be selected / deselected using the following group aliases:"
+  echo
+  for g in ${!groups[@]} ; do
+    echo "  $g=${groups[$g]}"
+  done
+  echo
+  echo "Note that in general, [CATAGORY] and --yes-[CATAGORY] are"
+  echo "roughly equivalent, except that --yes-[CATAGORY] takes"
+  echo "precidence over --no-[CATAGORY].  This allows you to select"
+  echo "packages from a deselected group; e.g.:"
+  echo
+  echo "  ${program##*/} --no-programming --yes-java"
+  echo
+  echo "See also the apt-get(8), apt-cache(8) manual pages."
+  exit 0
 fi
 
 #
@@ -233,24 +228,24 @@ fi
 #
 while [ $# -gt 0 ] ; do
 
-	option=$1
-	shift
+  option=$1
+  shift
 
-	# echo "Process $option"
+  # echo "Process $option"
 
-	case "$option" in
+  case "$option" in
 
-		--no-* )
-			remove=${option:5}
-			no_list="$no_list $remove"
-			;;
+    --no-* )
+      remove=${option:5}
+      no_list="$no_list $remove"
+      ;;
 
-		--yes-* )
-			add=${option:6}
-			yes_list="$yes_list $add"
-			;;
+    --yes-* )
+      add=${option:6}
+      yes_list="$yes_list $add"
+      ;;
 
-	esac
+  esac
 done
 
 # If there is no $DISPLAY, then skip packages that depend on it.
@@ -266,18 +261,18 @@ $verbose && echo "List of items to add is: $yes_list"
 # Remove all of the --no items
 #
 for remove in $no_list ; do
-	if [ "x${install_list[$remove]}" != "x" ] ; then
-		$verbose && echo "Deselect $remove: ${install_list[$remove]}" >&2
-		unset install_list[$remove]
-	fi
+  if [ "x${install_list[$remove]}" != "x" ] ; then
+    $verbose && echo "Deselect $remove: ${install_list[$remove]}" >&2
+    unset install_list[$remove]
+  fi
 
-	if [ "x${groups[$remove]}" != "x" ] ; then
-		$verbose && echo "Deselect group $remove=${groups[$remove]}" >&2
-		for i in ${groups[$remove]} ; do
-			$verbose && echo "Deselect $i: ${install_list[$i]}"
-			unset install_list[$i]
-		done
-	fi
+  if [ "x${groups[$remove]}" != "x" ] ; then
+    $verbose && echo "Deselect group $remove=${groups[$remove]}" >&2
+    for i in ${groups[$remove]} ; do
+      $verbose && echo "Deselect $i: ${install_list[$i]}"
+      unset install_list[$i]
+    done
+  fi
 done
 
 #
@@ -285,10 +280,10 @@ done
 # have been removed.
 #
 for add in $yes_list ; do
-	if [ "x${packages[$add]}" != "x" ] ; then
-		$verbose && echo "Select $add: ${packages[$add]}" >&2
-		install_list[$add]=${packages[$add]}
-	fi
+  if [ "x${packages[$add]}" != "x" ] ; then
+    $verbose && echo "Select $add: ${packages[$add]}" >&2
+    install_list[$add]=${packages[$add]}
+  fi
 done
 
 echo "Package sets selected for installation: ${!install_list[@]}"

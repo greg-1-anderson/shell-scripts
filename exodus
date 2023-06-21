@@ -18,9 +18,9 @@
 #
 # Options:
 #
-#    --base			Base directory where site is located on target system
+#    --base         Base directory where site is located on target system
 #
-#	 --base-domain  Base domain where to serve site from.
+#    --base-domain  Base domain where to serve site from.
 #
 #    --no-database  Omit portion of output script that copies database
 #
@@ -32,7 +32,6 @@
 #                   Note that regardless of the valueo of this option, the ouput
 #                   script is always printed to stdout AND written to a file.
 #
-
 
 SITES=""
 BASE_DIR="/var/www"
@@ -108,7 +107,6 @@ while [ $# -gt 0 ] ; do
   esac
 
 done
-
 
 if $help ; then
   cat $0 | sed -e '1,2d' -e '/^ *$/,$d' | sed -e 's/^#//' -e 's/^ //'
