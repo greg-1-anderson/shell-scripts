@@ -65,7 +65,6 @@ packages["graphics"]="gimp inkscape imagemagick"
 #
 packages["sound"]="audacity"
 
-
 groups["system"]="admin intl network system-gui repository compress"
 # nvidia
 
@@ -127,10 +126,6 @@ packages["ide"]="eclipse" # and netbeans
 # packages["android"]="gnupg gperf libsdl-dev libesd0-dev libwxgtk2.6-dev libncurses5-dev zlib1g-dev"
 
 groups["gui"]="system-gui ${groups[apps]} debug ide"
-
-
-
-
 
 verbose=false
 show=false

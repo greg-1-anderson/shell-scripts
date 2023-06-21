@@ -243,7 +243,6 @@ while [ $# -gt 0 ] ; do
       shift
       ;;
 
-
     #
     # Documentroot base is the directory
     # where the document roots for the
@@ -380,7 +379,6 @@ while [ $# -gt 0 ] ; do
 
 done
 
-
 #
 # If no site_fqdn was specified, then we will by default
 # assume that the site_fqdn is either the site_alias with
@@ -495,7 +493,6 @@ fi
 http_documentroot=$documentroot$http_documentroot_postfix
 https_documentroot=$documentroot$https_documentroot_postfix
 
-
 #
 # Create a sed script that will create replacement
 # patterns for each of the specified variable names
@@ -529,7 +526,6 @@ createReplacementScript()
     done
   ) >> $sed_script
 }
-
 
 
 #
@@ -649,8 +645,6 @@ signing_request=$signing_request_dir/${site_fqdn}-server.csr
 
 # Set this to -des3 to password-protect certificate
 certificate_password_option=
-
-
 
 #
 # Next we'll write all of our variables into a sed script

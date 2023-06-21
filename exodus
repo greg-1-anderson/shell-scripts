@@ -33,7 +33,6 @@
 #                   script is always printed to stdout AND written to a file.
 #
 
-
 SITES=""
 BASE_DIR="/var/www"
 BASE_DOMAIN="example.com"
@@ -108,7 +107,6 @@ while [ $# -gt 0 ] ; do
   esac
 
 done
-
 
 if $help ; then
   cat $0 | sed -e '1,2d' -e '/^ *$/,$d' | sed -e 's/^#//' -e 's/^ //'

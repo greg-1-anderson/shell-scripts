@@ -67,7 +67,6 @@ if [ -z "$INSTALLATION_DATA_REPO" ] ; then
   fi
 fi
 
-
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
 #  G E T   I N S T A L L   D A T A
@@ -115,7 +114,6 @@ if [ -z "$CONFIG_REPO" ] ; then
   fi
 fi
 
-
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
 #  I N S U R E   S S H   K E Y   P A I R S   A R E   S E T   U P
@@ -157,7 +155,6 @@ if [ -f "$HOME/.ssh/id_$keytype.pub" ] ; then
   echo "ssh key fingerprint for public key:"
   ssh-keygen -lf "$HOME/.ssh/id_$keytype.pub"
 fi
-
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -224,7 +221,6 @@ then
     git commit -m "Automatically create an installdata project to store key pairs in"
   )
 fi
-
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
@@ -702,7 +698,6 @@ if [ "X$chkprofileforbashrc" = "X" ] ; then
   echo 'source .bashrc' >> ~/.profile
 fi
 
-
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #
 #  S E T   U P   P R E F E R E N C E S   F O R    V A R I O U S    A P P L I C A T I O N S
@@ -743,7 +738,6 @@ fi
 if [ "$OS" == "Darwin" ] ; then
   SUBLIME_CONFIG_DIR="$HOME/Library/Application Support/Sublime Text 3"
 fi
-
 
 #
 # Copy sublime license file, if one exists in installdata
@@ -891,7 +885,6 @@ fi
 #fi
 
 
-
 #
 # Some non-Mac settings
 #
@@ -908,7 +901,6 @@ if [ -f "$HOME/.nedit/nedit.rc" ] ; then
     -e 's/^\(nedit.openInTab: \).*/\1 False/' \
     -e 's/^\(nedit.statisticsLine: \).*/\1 True/' \
     -e 's/^\(nedit.tabDistance: \).*/\1 8/'
-
 
 else
 

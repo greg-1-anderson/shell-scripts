@@ -63,7 +63,6 @@ if true ; then
 
   fi
 
-
   wget http://www.medibuntu.org/sources.list.d/${ubuntuRevision}.list -O /etc/apt/sources.list.d/medibuntu.list
   apt-get update
   apt-get -y install medibuntu-keyring
