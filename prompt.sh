@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Prompt configuration
 c_red='0;31m'
 c_green='0;32m'
