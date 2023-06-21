@@ -42,20 +42,32 @@ OS="$(uname -s)"
 if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
   # Remap tilda / backtick key for external keyboard.
   # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
-  hidutil property --set '{"UserKeyMapping":
-      [{"HIDKeyboardModifierMappingSrc":0x700000035,
-        "HIDKeyboardModifierMappingDst":0x700000064},
-       {"HIDKeyboardModifierMappingSrc":0x700000064,
-        "HIDKeyboardModifierMappingDst":0x700000035}]
-  }' > /dev/null
+  hidutil property --set '{
+  "UserKeyMapping": [
+    {
+      "HIDKeyboardModifierMappingSrc":0x700000035,
+      "HIDKeyboardModifierMappingDst":0x700000064
+    },
+    {
+      "HIDKeyboardModifierMappingSrc":0x700000064,
+      "HIDKeyboardModifierMappingDst":0x700000035
+    }
+  ]
+}' > /dev/null
 else
   # Restore tilda / backtick key
-  hidutil property --set '{"UserKeyMapping":
-      [{"HIDKeyboardModifierMappingSrc":0x700000035,
-        "HIDKeyboardModifierMappingDst":0x700000035},
-       {"HIDKeyboardModifierMappingSrc":0x700000064,
-        "HIDKeyboardModifierMappingDst":0x700000064}]
-  }' > /dev/null
+  hidutil property --set '{
+  "UserKeyMapping": [
+    {
+      "HIDKeyboardModifierMappingSrc":0x700000035,
+      "HIDKeyboardModifierMappingDst":0x700000035
+    },
+    {
+      "HIDKeyboardModifierMappingSrc":0x700000064,
+      "HIDKeyboardModifierMappingDst":0x700000064
+    }
+  ]
+}' > /dev/null
 fi
 
 # Bash completion. Requires bash-completion. c.f. base-brew-install script.

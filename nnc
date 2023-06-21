@@ -10,8 +10,8 @@
 # write it back to the input file.
 #
 if [ $# == 0 ] ; then
-	echo "Usage: $0 file.nc"
-	exit 1
+  echo "Usage: $0 file.nc"
+  exit 1
 fi
 
 inputfile=$1
@@ -20,9 +20,9 @@ basename=${filename%.*}
 path=${inputfile%/*}
 
 if [ "x$filename" != "x$basename.nc" ] ; then
-	echo "This program is only for use with .nc files (produced with mcrypt)"
-	echo 'Hint: to encrypt <file>, use "nnc <file>.nc", then remove <file> when satisfied with <file>.nc'
-	exit 1
+  echo "This program is only for use with .nc files (produced with mcrypt)"
+  echo 'Hint: to encrypt <file>, use "nnc <file>.nc", then remove <file> when satisfied with <file>.nc'
+  exit 1
 fi
 
 #
@@ -41,8 +41,8 @@ keyfile=`mktemp -p $HOME/tmp`
 # Don't allow editing of the same file twice.
 #
 if [ -f $clearfile ] ; then
-	echo "$filename already open (lockfile: $clearfile)"
-	exit 0
+  echo "$filename already open (lockfile: $clearfile)"
+  exit 0
 fi
 
 #
@@ -51,37 +51,37 @@ fi
 # exist, then create it.
 #
 successful=false
-until $successful ; do	
-	if [ -f $inputfile ] ; then
-		read -s -p "Enter passphrase:" key
-		echo
-		cp $inputfile $tmpfile
-		echo $key > $keyfile
-		mdecrypt --keyfile $keyfile $tmpfile
-		rm -f $tmpfile
-		if [ -f $clearfile ] ; then
-			successful=true
-		fi
-		rm -f $keyfile
-	else
-		echo "$inputfile does not exist."
-		read -s -p "Enter passphrase to create it:" key
-		echo
-		read -s -p "Enter it again:" testkey
-		echo
-		
-		if [ "x$key" == "x$testkey" ] ; then
-			if [ -f $path/$basename ] ; then
-				cp $path/$basename $clearfile
-			else
-				echo "# File $filename created by nnc" > $clearfile
-			fi
-			successful=true
-		else
-			echo "Passphrases did not match."
-			echo
-		fi
-	fi
+until $successful ; do
+  if [ -f $inputfile ] ; then
+    read -s -p "Enter passphrase:" key
+    echo
+    cp $inputfile $tmpfile
+    echo $key > $keyfile
+    mdecrypt --keyfile $keyfile $tmpfile
+    rm -f $tmpfile
+    if [ -f $clearfile ] ; then
+      successful=true
+    fi
+    rm -f $keyfile
+  else
+    echo "$inputfile does not exist."
+    read -s -p "Enter passphrase to create it:" key
+    echo
+    read -s -p "Enter it again:" testkey
+    echo
+
+    if [ "x$key" == "x$testkey" ] ; then
+      if [ -f $path/$basename ] ; then
+        cp $path/$basename $clearfile
+      else
+        echo "# File $filename created by nnc" > $clearfile
+      fi
+      successful=true
+    else
+      echo "Passphrases did not match."
+      echo
+    fi
+  fi
 done
 
 origfile=$clearfile".orig"
@@ -89,14 +89,13 @@ cp -f $clearfile $origfile
 nedit $clearfile
 
 if [ "x`diff $clearfile $origfile`" != "x" ] ; then
-	echo $key > $keyfile
-	mcrypt --keyfile $keyfile $clearfile
-	rm -f $keyfile
-	rm -f $clearfile
-	mv -f $clearfile.nc $inputfile
+  echo $key > $keyfile
+  mcrypt --keyfile $keyfile $clearfile
+  rm -f $keyfile
+  rm -f $clearfile
+  mv -f $clearfile.nc $inputfile
 else
-	echo "No change to file"
-	rm -f $clearfile
+  echo "No change to file"
+  rm -f $clearfile
 fi
 rm -f $origfile
-

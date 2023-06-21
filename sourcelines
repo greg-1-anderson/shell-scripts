@@ -9,7 +9,7 @@
 tmpfile=`mktemp "/tmp/sourcelinesXXXXXX"`
 
 #
-# We use a trick:  gcc -E will run the preprocessor, 
+# We use a trick:  gcc -E will run the preprocessor,
 #
 find $1 -name "*.cpp" -exec bash -c 'grep -v "^[ \t]*#include" $0 | grep -v "^[ \t]*#error" | gcc -E - | grep -v "^[ \t]*[\{\}\;]*[ \t]*$" | grep -v "^[ \t]*#" | wc -l' \{\} \; > $tmpfile
 find $1 -name "*.c" -exec bash -c 'grep -v "^[ \t]*#include" $0 | grep -v "^[ \t]*#error"  | gcc -E - | grep -v "^[ \t]*[\{\}\;]*[ \t]*$" | grep -v "^[ \t]*#" | wc -l' \{\} \; >> $tmpfile
@@ -20,7 +20,7 @@ find $1 -name "*.java" -exec bash -c 'cat $0 | gcc -E - | grep -v "^[ \t]*[\{\}\
 # Sum up the lines from each source file
 #
 t=0
-for x in `cat $tmpfile`; do t=$((t+x)); done 
+for x in `cat $tmpfile`; do t=$((t+x)); done
 rm $tmpfile
 
 echo $t

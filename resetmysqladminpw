@@ -12,11 +12,11 @@ $0 - Reset mysql admin password
 
 Usage:
 
-	$0 newpassword
+  $0 newpassword
 
 Options:
 
-	-d, --debug       Do not reset password; just show steps	
+  -d, --debug       Do not reset password; just show steps
 "
 
 NEW_MYSQL_ROOT_PASSWORD=password
@@ -25,49 +25,49 @@ DEBUG=false
 
 while [ $# -gt 0 ] ; do
 
-	option=$1
-	shift
+  option=$1
+  shift
 
-	case "$option" in
+  case "$option" in
 
-		--help | -h | -help)
-			echo "$help_message"
-			exit 0 
-			;;
+    --help | -h | -help)
+      echo "$help_message"
+      exit 0
+      ;;
 
-		--debug)
-			DO=echo
-			BACKGROUND=\&
-			DEBUG=true
-			;;
-		
-		-*)
-			echo "Unknown option $option"
-			exit 1
-			;;
-		
-		*)
-			NEW_MYSQL_ROOT_PASSWORD=$option
-			;;
-	
-	esac
+    --debug)
+      DO=echo
+      BACKGROUND=\&
+      DEBUG=true
+      ;;
+
+    -*)
+      echo "Unknown option $option"
+      exit 1
+      ;;
+
+    *)
+      NEW_MYSQL_ROOT_PASSWORD=$option
+      ;;
+
+  esac
 done
 
 if [ -f /usr/local/bin/mysql.server ] ; then
-	MYSQL_INIT=/usr/local/bin/mysql.server
+  MYSQL_INIT=/usr/local/bin/mysql.server
 elif [ -f /etc/init.d/mysql ] ; then
-	MYSQL_INIT=/etc/init.d
+  MYSQL_INIT=/etc/init.d
 fi
 
 if [ -z "$MYSQL_INIT" ] ; then
-	echo "Could not find mysql init script."
-	exit 1
+  echo "Could not find mysql init script."
+  exit 1
 fi
 
 MYSQL_SCRIPT_FILE=`mktemp mysql_pw_reset.sql.XXXXX`
 if [ -z "$MYSQL_SCRIPT_FILE" ] ; then
-	echo "mktemp failed to create a temporary file."
-	exit 1
+  echo "mktemp failed to create a temporary file."
+  exit 1
 fi
 
 #
@@ -86,11 +86,11 @@ sleep 3
 #
 # From the command line:
 #
-#	mysql -u root
-#	mysql> use mysql;
-#	mysql> update user set password=PASSWORD("NEW-ROOT-PASSWORD") where User='root';
-#	mysql> flush privileges;
-#	mysql> quit
+#  mysql -u root
+#  mysql> use mysql;
+#  mysql> update user set password=PASSWORD("NEW-ROOT-PASSWORD") where User='root';
+#  mysql> flush privileges;
+#  mysql> quit
 #
 # We will send the above SQL commands directly to mysql.
 #
@@ -101,24 +101,23 @@ flush privileges;
 __EOF__
 
 if $DEBUG ; then
-	echo mysql -u root
-	sed -e 's|^|mysql> |' $MYSQL_SCRIPT_FILE
+  echo mysql -u root
+  sed -e 's|^|mysql> |' $MYSQL_SCRIPT_FILE
 else
-	mysql -u root < $MYSQL_SCRIPT_FILE
+  mysql -u root < $MYSQL_SCRIPT_FILE
 fi
 rm $MYSQL_SCRIPT_FILE
 
 #
-# Step # 5: Stop MySQL Server: 
+# Step # 5: Stop MySQL Server:
 #
 $DO "$MYSQL_INIT" stop
 
 #
-# Step # 6: Restart MySQL server 
+# Step # 6: Restart MySQL server
 #
 $DO "$MYSQL_INIT" start
 
 echo
 echo "# To test your new mysql root password:"
 echo "mysql -u root -p"
-
