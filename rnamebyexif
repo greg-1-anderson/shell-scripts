@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #
-# This script will touch all of the .jpg files in
+# This script will rename all of the .jpg files in
 # the current directory, setting their last-modified
 # date equal to the timestamp in the exif tags.
 #
 # TO DO:  Make sure that exif.py returns a date
-# befor calling 'touch'.
+# before running.
 #
 EXIFPY=/usr/share/apps/imagerotation/exif.py
 for x in `ls *.jpg` ; do
