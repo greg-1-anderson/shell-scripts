@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "This script is obsolete. Please run 'install' instead. Note that 'install' performs only a subset of the configuration done here."
+exit 0
+
 #
 # Barge in to a new system and make it mine.
 #
