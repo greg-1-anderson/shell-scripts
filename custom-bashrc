@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 # Use 'sed $INPLACE' for cross-platform 'sed -i'.
 INPLACE="-i"
 if [ "$OS" == "Darwin" ]
@@ -36,8 +38,25 @@ export RUBYOPTS="-E utf-8"
 
 OS="$(uname -s)"
 
-# Go
-# export GOPATH=$HOME/go
+# Detect external keyboard
+if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
+  # Remap tilda / backtick key for external keyboard.
+  # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
+  hidutil property --set '{"UserKeyMapping":
+      [{"HIDKeyboardModifierMappingSrc":0x700000035,
+        "HIDKeyboardModifierMappingDst":0x700000064},
+       {"HIDKeyboardModifierMappingSrc":0x700000064,
+        "HIDKeyboardModifierMappingDst":0x700000035}]
+  }' > /dev/null
+else
+  # Restore tilda / backtick key
+  hidutil property --set '{"UserKeyMapping":
+      [{"HIDKeyboardModifierMappingSrc":0x700000035,
+        "HIDKeyboardModifierMappingDst":0x700000035},
+       {"HIDKeyboardModifierMappingSrc":0x700000064,
+        "HIDKeyboardModifierMappingDst":0x700000064}]
+  }' > /dev/null
+fi
 
 # Bash completion. Requires bash-completion. c.f. brew-install script.
 # Many of these scripts fail with syntax errors, even after upgrading
@@ -67,11 +86,7 @@ alias openports='portscan localhost'
 alias rmrej='rm `find . -name "*.rej"` `find -name "*.orig"`'
 alias rot13='tr a-zA-Z n-za-mN-ZA-M'
 alias findtabs="find -not -regex '..*/\..*' -exec grep -HP '\t' {} \;"
-alias pull-all='for x in * ; do if [ -d $x/.git ] ; then ( cd $x ; s=$(git status -s); if [ -z "$s" ] ; then echo "Update $x." ; git pull ; else echo "$x is modified; skipping update." ; fi ) fi done'
 alias dr=drush
-alias ..='cd ..'
-alias composer-install-all='for x in $(ls */composer.json) ; do ( cd $(dirname $x) ; echo "====== $x ======" ; composer install ); done'
-alias cimt='ssh -A cimt.getpantheon.com'
 alias randstr='LC_ALL=C tr -dc "AHJ-NP-Za-km-np-z2-9" </dev/urandom | head -c 64 ; echo'
 alias short='LC_ALL=C tr -dc "a-km-np-z" </dev/urandom | head -c 8 ; echo'
 alias se='subl'
@@ -79,27 +94,6 @@ alias se='subl'
 # Run a web server with Python. See: http://www.linuxjournal.com/content/tech-tip-really-simple-http-server-python
 alias pyserve='python -m SimpleHTTPServer'
 alias pyserver=pyserve
-
-alias termineco='TERMINUS_HOST=hermes.sandbox-eco.sbx01.pantheon.io PANTHEON_CERT=$HOME/certs/employee.pem TERMINUS_CACHE_DIR=$HOME/.termineco terminus -Dverify_host_cert=0'
-
-export YGGUSER="greg"
-alias yggssh='if [ $(find $TMPDIR/ygg-ssh -mtime -14 -type f -name "host" 2>/dev/null) ];then touch $TMPDIR/ygg-ssh/host; echo "Using cached hostname..."; else echo "Retrieving random hostname..."; mkdir $TMPDIR/ygg-ssh; echo $(gcloud compute instances list --project pantheon-dmz | grep yggdrasil | grep RUNNING | awk "{ print \$1 }" | sort -R | head -n 1).panth.io > $TMPDIR/ygg-ssh/host; fi; ssh $YGGUSER@$(cat $TMPDIR/ygg-ssh/host)'
-
-#alias ygg='yggssh ygg $1'
-alias ygg='ssh greg@ygg ygg'
-
-function curlygg {
-  curl -E$HOME/certs/employee.pem "https://api.live.getpantheon.com:8443/$1"
-}
-
-# Set 'PANTHEON_SESSION' from Terminus cache, or browser cookie after url-decoding it
-function pantheonsession() {
-  if [[ -z "$1" ]] ; then
-    export PANTHEON_SESSION="$(cat ~/.terminus/cache/session | jq -r .session)"
-  else
-    export PANTHEON_SESSION="$(echo $1 | sed -e 's/%3A/:/g')"
-  fi
-}
 
 # Run a web server with php
 alias phpserve='php -S 127.0.0.1:8001'
@@ -121,10 +115,7 @@ function php-switch() {
 
 if [ "$OS" == "Darwin" ] ; then
   alias ssh-copy-id='ssh-copy-id.sh'
-  alias sublime_text='/Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text'
 fi
-
-
 
 function tolower() { tr A-Z a-z <<<$@; }
 function mcd() { mkdir -p "$1" && cd "$1"; }
@@ -134,13 +125,6 @@ function mcd() { mkdir -p "$1" && cd "$1"; }
 # http://stackoverflow.com/questions/2693173/log-of-svn-activity-for-a-certain-user
 function lastweek() {
   svn log "$1" -r {$(date --date="Monday last week" "+%F")}:{$(date --date="Sunday last week" "+%F")} | filter-log-by-user "$2"
-}
-
-# Make yubikey work in current terminal window.
-function yubi {
-  export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)
-  ssh-add -e /usr/local/lib/opensc-pkcs11.so
-  ssh-add -s /usr/local/lib/opensc-pkcs11.so
 }
 
 # Create a .pem from a .p12
@@ -177,159 +161,7 @@ function fingerprints() {
   done < $file
 }
 
-# cd to a sibling directory
-function sib() {
-  sibpath=$1
-  sib=${sibpath%%/*}
-  remaining=
-  if [ "x$sib" != "x$sibpath" ] ; then
-    remaining=${sibpath#*/}
-  fi
-  dir=$(pwd)
-  target=
-
-  if [ -z $# ] || [ -z "$sib" ] ; then
-    echo "Usage: sib <name of sibling folder>" >&2
-  else
-    while [ -z "$target" ] && [ "$dir" != "/" ] && [ -n "$dir" ]; do
-      dir=$(dirname "$dir")
-      if [ -n "$remaining" ] ; then
-        if [ -d "$dir/$sib/$remaining" ] ; then
-          target="$dir/$sib/$remaining"
-        fi
-      else
-        if [ -d "$dir/$sib" ] ; then
-          target="$dir/$sib"
-        fi
-      fi
-    done
-
-    if [ -n "$target" ] ; then
-      echo "$target"
-      cd "$target"
-    else
-      echo "$sibpath not found" >&2
-    fi
-  fi
-}
-
-# 'bd' from https://github.com/vigneshwaranr/bd - thanks!
-# (simplified to just do -s behavior if full match not found)
-function bd() {
-  if [ $# -eq 0 ]
-  then
-    echo "Usage: bd <name of some parent folder>" >&2
-  else
-    OLDPWD=`pwd`
-
-    NEWPWD=`echo $OLDPWD | sed 's|\(.*/'$1'/\).*|\1|'`
-    index=`echo $NEWPWD | awk '{ print index($1,"/'$1'/"); }'`
-    if [ $index -eq 0 ]
-    then
-      NEWPWD=`echo $OLDPWD | sed 's|\(.*/'$1'[^/]*/\).*|\1|'`
-      index=`echo $NEWPWD | awk '{ print index($1,"/'$1'"); }'`
-    fi
-
-    if [ $index -eq 0 ]
-    then
-      echo "No such occurrence."
-    fi
-
-    echo $NEWPWD
-    cd "$NEWPWD"
-  fi
-}
-
-# Prompt configuration
-c_red='0;31m'
-c_green='0;32m'
-c_blue='0;34m'
-c_lt_grey='0;37m'
-c_reset='0m'
-
-__prompt_color()
-{
-  # Use git colors if we have a .git directory
-  if git rev-parse --git-dir >/dev/null 2>&1
-  then
-    if git diff --quiet 2>/dev/null >&2
-    then
-      echo $c_green
-    else
-      echo $c_red
-    fi
-    return 0
-  fi
-
-  # Use svn colors if we have a .svn directory
-  if [ -d .svn ]
-  then
-    svnstatusoutput="`svn status 2>/dev/null | grep -v '^\?'`"
-    if [ -z "$svnstatusoutput" ]
-    then
-      echo $c_green
-    else
-      echo $c_red
-    fi
-    return 0
-  fi
-
-  echo $c_reset
-  return 0
-}
-
-__prompt_info()
-{
-  # Emit the git branch if we have a .git directory
-  if git rev-parse --git-dir >/dev/null 2>&1
-  then
-    gitver="$(git branch 2>/dev/null| sed -n '/^\*/s/^\* //p')"
-    echo -e "[${gitver}] "
-    return 0
-  fi
-
-  # Emit the svn revision if we have a .svn directory
-  if [ -d .svn ]
-  then
-    svnrev=$(svn info 2>/dev/null | grep '^Revision' | sed -e 's/^[^:]*: *//g')
-    if [ -n "$svnrev" ]
-    then
-      echo -e "(r${svnrev}) "
-    fi
-    return 0
-  fi
-
-}
-
-if [ "`type __drush_ps1 2> /dev/null`" == "" ] ; then
-  __drush_ps1() {
-    return 0
-  }
-fi
-
-if [ "x$TERM" != "xcygwin" ] ; then
-  HOSTNAME=$(hostname -s)
-  if [ "$HOSTNAME" == "vps" ] || [ "$HOSTNAME" == "server" ] ; then
-    HOSTNAME=$(hostname -f | sed -e 's/^[^.]*\.//' -e 's/\..*//')
-  fi
-  PROMPT_COMMAND='_p=$(__prompt_info)'
-  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@'"$HOSTNAME"':\w\[\e[$c_reset\]\[\e[$c_green\]$(__drush_ps1)\[\e[$c_reset\]$ '
-fi
-
-
-# The powerline-go prompt
-
-function _update_ps1() {
-    # Removed the modules "user" and "host"
-    PS1="$(~/go/bin/powerline-go -modules "venv,ssh,cwd,perms,git,hg,jobs,exit,root" -theme low-contrast -path-aliases \~/local/consolidation=@con\,\~/pantheon=@pan -error $?)"
-}
-
-s=`which powerline-go 2>/dev/null`
-if [ -n "$s" ] ; then
-	if [ "$TERM" != "linux" ]; then
-	    PROMPT_COMMAND="_update_ps1;"
-	fi
-fi
+source $SCRIPT_DIR/prompt.sh
 
 # Assume that we will use vi
 export EDITOR=vi
@@ -379,44 +211,3 @@ if [ -n "$d" ] ; then
     fi
   fi
 fi
-
-if [ "$(uname -s)" != "Darwin" ]
-then
-  # Start up ssh-agent.  From http://mah.everybody.org/docs/ssh
-  SSH_ENV="$HOME/.ssh/environment"
-
-  function start_agent {
-       echo "Initialising new SSH agent..."
-       /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-       echo succeeded
-       chmod 600 "${SSH_ENV}"
-       . "${SSH_ENV}" > /dev/null
-       /usr/bin/ssh-add;
-  }
-
-  # Source SSH settings, if applicable
-
-  if [ -f "${SSH_ENV}" ]; then
-       . "${SSH_ENV}" > /dev/null
-       #ps ${SSH_AGENT_PID} doesn't work under cywgin
-       ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-           start_agent;
-       }
-  else
-       start_agent;
-  fi
-else
-
-  # For yubikey:
-#  eval $(ssh-agent)
-#  ssh-add
-
-  function cleanup {
-    echo "Killing SSH-Agent"
-    kill -9 $SSH_AGENT_PID
-  }
-
-#  trap cleanup EXIT
-
-fi
-
