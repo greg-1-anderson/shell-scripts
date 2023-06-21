@@ -18,9 +18,9 @@
 #
 # Options:
 #
-#    --base			Base directory where site is located on target system
+#    --base         Base directory where site is located on target system
 #
-#	 --base-domain  Base domain where to serve site from.
+#    --base-domain  Base domain where to serve site from.
 #
 #    --no-database  Omit portion of output script that copies database
 #
