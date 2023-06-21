@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# After running this script, we are also going to want:
-# https://github.com/docker/toolbox/releases/download/v1.8.2c/DockerToolbox-1.8.2c.pkg
-
-# For other configuration instructions, see:
-# https://github.com/pantheon-systems/infrastructure
-
+#
+# Install components commonly used on MacOS via Brew
+#
 
 OS="$(uname -s)"
 

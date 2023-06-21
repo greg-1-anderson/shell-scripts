@@ -23,15 +23,15 @@ behave uniformly.  To whit:
 
   rm move-in
   source $HOME/.bashrc
-  sudo $HOME/local/utiliscripts/install-components
+  sudo $HOME/local/utiliscripts/base-apt-install
 
 The move-in script checks out all of the utiliscripts and sets
 up the $PATH and a number of other environment settings.
 
-The install-components uses `apt-get install` to install a whole
+The base-apt-install uses `apt-get install` to install a whole
 bunch of packages.  Run with --help to see options for installing
 less than everything (the default is 'everything').
 
 Note:  Some of these scripts (e.g. move-in) work fine on the Mac.
-Use the `brew-install` script instead of `install-components` to get
+Use the `base-brew-install` script instead of `base-apt-install` to get
 the software you need.

@@ -58,7 +58,7 @@ else
   }' > /dev/null
 fi
 
-# Bash completion. Requires bash-completion. c.f. brew-install script.
+# Bash completion. Requires bash-completion. c.f. base-brew-install script.
 # Many of these scripts fail with syntax errors, even after upgrading
 # bash; however, others work well, so we will just ignore errors.
 if [ "$OS" == "Darwin" ] && [ -f $(brew --prefix)/etc/bash_completion ]; then

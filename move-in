@@ -20,8 +20,10 @@
 #
 # Good follow-up commands include:
 #
-#	install-components
-#	repair-ubuntu
+#  	base-apt-install
+#	  base-brew-install
+#
+# Depending on which platform you're running on.
 #
 SELF_DIRNAME="`dirname -- "$0"`"
 
