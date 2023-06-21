@@ -1,20 +1,20 @@
-Shell Scripts
-=============
-
+# Shell Scripts
+ 
 To get started, run:
 
-    source install
+```bash
+source install
+```
 
 This will also install the following projects:
 
-    - History Recall
-    - fd
-    - git-bashrc
+- [History Recall](https://github.com/g1a/history-recall)
+- [fd](https://github.com/g1a/fd)
+- [git-bashrc](https://github.com/g1a/git-bashrc)
 
-Also, all of the scripts contained in this project are added to the $PATH once installed.
+Also, all of the scripts contained in this project are added to the `$PATH` once installed.
 
-Index of Scripts
-----------------
+## Index of Scripts
 
 - `base-apt-install`
 Run with "sudo" on Linux systems; adds base components useful for software development et. al.
