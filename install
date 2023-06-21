@@ -1,11 +1,9 @@
-#!/bin/bash
-
 #
 # Install some useful projects (including this one)
 #
 # Usage:
 #
-#     source install-useful
+#     source install
 #
 
 # Get the path to the directory this script was ran from
