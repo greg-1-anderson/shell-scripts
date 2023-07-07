@@ -23,6 +23,10 @@ then
   exit 1
 fi
 
+###
+### Brew components
+###
+
 #
 # Get brew set up.
 #
@@ -51,6 +55,23 @@ brew install mkdocs
 brew install bash-completion
 brew install bat
 brew install composer
+
+#
+# PHP. Lots of PHP.
+#
+brew tap shivammathur/php
+brew install shivammathur/php/php@8.2
+brew install shivammathur/php/php@8.1
+brew install shivammathur/php/php@8.0
+brew install shivammathur/php/php@7.4
+
+brew tap shivammathur/extensions
+brew install shivammathur/extensions/pcov@8.2
+brew install shivammathur/extensions/pcov@8.1
+brew install shivammathur/extensions/pcov@8.0
+brew install shivammathur/extensions/pcov@7.4
+
+brew link --force --overwrite shivammathur/php/php@8.2
 
 #
 # Pantheon security
@@ -129,3 +150,16 @@ brew install mysql
 
 # Start mysql, but do not run it on restart:
 # mysql.server start
+
+
+###
+### Install command line tools
+###
+
+if ! command -v xcode-select &> /dev/null
+then
+    xcode-select --install
+else
+    echo "xcode is already installed"
+fi
+
