@@ -40,7 +40,7 @@ export RUBYOPTS="-E utf-8"
 OS="$(uname -s)"
 
 # Detect external keyboard
-if false && ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
+if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
   # Remap tilda / backtick key for external keyboard.
   # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
   hidutil property --set '{
