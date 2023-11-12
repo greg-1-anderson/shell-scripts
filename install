@@ -101,7 +101,7 @@ if [ -n "$GITBASHRC" ] && [ ! -d "$GITBASHRC" ] ; then
     cd "$(dirname "$GITBASHRC")"
     git clone https://github.com/g1a/git-bashrc.git
     cd "$GITBASHRC"
-    source bashrc-install.sh
+    source bashrc-install
   )
 fi
 
