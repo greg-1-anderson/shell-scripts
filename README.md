@@ -16,10 +16,10 @@ Also, all of the scripts contained in this project are added to the `$PATH` once
 
 ## Index of Scripts
 
-- `base-apt-install`
+- `base-linux-install`
 Run with "sudo" on Linux systems; adds base components useful for software development et. al.
 
-- `base-brew-install`
+- `base-mac-install`
 Run on MacOS systems to install base components needed for productive development.
 
 - `codec-install`
