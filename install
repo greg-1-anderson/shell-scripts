@@ -129,5 +129,18 @@ __EOF__
 
 echo "Installed 'source custom-bashrc' in ~/$INSTALL_TO"
 
-# Source history-recall so that it is available in this shell.
+# Source our bashrc so that it is available in this shell.
 source "$CUSTOM_BASHRC"
+
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#
+#  F I N A L   T A S K S
+#
+#:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+# Ensure the default shell is bash
+
+if [ "$SHELL" != "/bin/bash" ] ; then
+  echo "Please enter your password to set your default shell to /bin/bash"
+  chsh -s /bin/bash
+fi
