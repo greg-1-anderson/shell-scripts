@@ -43,6 +43,8 @@ OS="$(uname -s)"
 if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
   # Remap tilda / backtick key for external keyboard.
   # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
+  # If this does not work, see https://support.apple.com/guide/mac-help/control-access-to-input-monitoring-on-mac-mchl4cedafb6/mac
+  # (Go to "Input Monitoring" in "Privacy & Security" control panel and allow Terminal to monitor input from keyboard even when using other applications)
   hidutil property --set '{
   "UserKeyMapping": [
     {
