@@ -45,7 +45,7 @@ brew tap homebrew/completions
 brew tap homebrew/cask
 
 #
-# Useful CLI tools
+# Useful CLI tools / shells
 #
 brew install tree
 brew install hub
@@ -55,6 +55,7 @@ brew install mkdocs
 brew install bash-completion
 brew install bat
 brew install composer
+brew install iterm2
 
 #
 # PHP. Lots of PHP.
