@@ -1241,15 +1241,15 @@ else
       #
       # Create the Certificate Authority [CA] key
       #
-      cat <<- __END__ > $certificate_dir/${site_fqdn}-ca-params.txt
-        $server_location_country
-        $server_location_state
-        $server_location_city
-        $organization
-        $organization CA
-        $site_fqdn
-        ca@$site_fqdn
-      __END__
+      cat << __END__ > $certificate_dir/${site_fqdn}-ca-params.txt
+$server_location_country
+$server_location_state
+$server_location_city
+$organization
+$organization CA
+$site_fqdn
+ca@$site_fqdn
+__END__
 
                         echo "ca params ($certificate_dir/${site_fqdn}-ca-params.txt) are:"
                         cat $certificate_dir/${site_fqdn}-ca-params.txt
@@ -1260,17 +1260,17 @@ else
       #
       # Create the server private key
       #
-      cat <<- __END__ > $certificate_dir/${site_fqdn}-csr-params.txt
-        $server_location_country
-        $server_location_state
-        $server_location_city
-        $organization
-        $organization WS
-        $site_fqdn
-        ca@$site_fqdn
-        challenge
-        $organization
-      __END__
+      cat << __END__ > $certificate_dir/${site_fqdn}-csr-params.txt
+$server_location_country
+$server_location_state
+$server_location_city
+$organization
+$organization WS
+$site_fqdn
+ca@$site_fqdn
+challenge
+$organization
+__END__
 
 
                         echo "csr params ($certificate_dir/${site_fqdn}-csr-params.txt) are:"
