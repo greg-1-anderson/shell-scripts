@@ -45,39 +45,39 @@ export RUBYOPTS="-E utf-8"
 OS="$(uname -s)"
 
 # Detect external keyboard
-if command hidutil 2> /dev/null ; then
-if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
-  # Remap tilda / backtick key for external keyboard.
-  # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
-  # If this does not work, see https://support.apple.com/guide/mac-help/control-access-to-input-monitoring-on-mac-mchl4cedafb6/mac
-  # (Go to "Input Monitoring" in "Privacy & Security" control panel and allow Terminal to monitor input from keyboard even when using other applications)
-  hidutil property --set '{
-  "UserKeyMapping": [
-    {
-      "HIDKeyboardModifierMappingSrc":0x700000035,
-      "HIDKeyboardModifierMappingDst":0x700000064
-    },
-    {
-      "HIDKeyboardModifierMappingSrc":0x700000064,
-      "HIDKeyboardModifierMappingDst":0x700000035
-    }
-  ]
-}' > /dev/null
-else
-  # Restore tilda / backtick key
-  hidutil property --set '{
-  "UserKeyMapping": [
-    {
-      "HIDKeyboardModifierMappingSrc":0x700000035,
-      "HIDKeyboardModifierMappingDst":0x700000035
-    },
-    {
-      "HIDKeyboardModifierMappingSrc":0x700000064,
-      "HIDKeyboardModifierMappingDst":0x700000064
-    }
-  ]
-}' > /dev/null
-fi
+if which hidutil > /dev/null 2>&1 ; then
+  if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
+    # Remap tilda / backtick key for external keyboard.
+    # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
+    # If this does not work, see https://support.apple.com/guide/mac-help/control-access-to-input-monitoring-on-mac-mchl4cedafb6/mac
+    # (Go to "Input Monitoring" in "Privacy & Security" control panel and allow Terminal to monitor input from keyboard even when using other applications)
+    hidutil property --set '{
+    "UserKeyMapping": [
+      {
+        "HIDKeyboardModifierMappingSrc":0x700000035,
+        "HIDKeyboardModifierMappingDst":0x700000064
+      },
+      {
+        "HIDKeyboardModifierMappingSrc":0x700000064,
+        "HIDKeyboardModifierMappingDst":0x700000035
+      }
+    ]
+  }' > /dev/null
+  else
+    # Restore tilda / backtick key
+    hidutil property --set '{
+    "UserKeyMapping": [
+      {
+        "HIDKeyboardModifierMappingSrc":0x700000035,
+        "HIDKeyboardModifierMappingDst":0x700000035
+      },
+      {
+        "HIDKeyboardModifierMappingSrc":0x700000064,
+        "HIDKeyboardModifierMappingDst":0x700000064
+      }
+    ]
+  }' > /dev/null
+  fi
 fi
 
 # Bash completion. Requires bash-completion. c.f. base-brew-install script.
