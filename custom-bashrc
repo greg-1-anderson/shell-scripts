@@ -119,6 +119,17 @@ alias pyserver=pyserve
 alias phpserve='php -S 127.0.0.1:8001'
 alias phpserver=phpserve
 
+# Print every IP address that's listening on port 22
+function sshable() {
+  for i in {1..254}; do
+    (
+      ip="10.0.0.$i"
+      nc -z -w 1 "$ip" 22 2>/dev/null && echo "SSH open: $ip"
+    ) &
+  done
+  wait
+}
+
 # Switch php version
 function php-switch() {
   if [ -n "$(ls /opt/homebrew/Cellar/php*/$1* 2>/dev/null)" ] ; then
