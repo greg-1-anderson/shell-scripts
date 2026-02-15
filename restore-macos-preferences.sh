@@ -79,6 +79,7 @@ defaults write com.apple.finder ShowPathbar -bool true
 defaults write com.apple.finder _FXSortFoldersFirst -bool true
 
 # Location to save screenshots
+mkdir -p "${HOME}/Pictures/Screenshots"
 defaults write com.apple.screencapture location -string '${HOME}/Pictures/Screenshots'
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
