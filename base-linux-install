@@ -41,6 +41,12 @@ declare -A packages
 declare -A install_list
 declare -A groups
 
+# Set up some external repositories
+apt update
+apt install software-properties-common
+add-apt-repository ppa:deadsnakes/ppa
+apt update
+
 groups["apps"]="reader-editor kde-utils graphics sound internet"
 groups["kde"]="kde-utils"
 
@@ -93,7 +99,7 @@ packages["compress"]="sharutils zip p7zip "
 
 groups["database"]="postgres mysql sqlite"
 
-groups["programming"]="compile-build dev-docs webservices debug ide repository compress python ${groups[database]}"
+groups["programming"]="pipx python3.13 compile-build dev-docs webservices debug ide repository compress python ${groups[database]}"
 
 packages["compile-build"]="g++ autoconf automake libtool libc6 flex bison libncurses5-dev"
 

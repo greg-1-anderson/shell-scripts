@@ -42,6 +42,16 @@ export LANGUAGE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 export RUBYOPTS="-E utf-8"
 
+# Set up pipx ensurepath if it hasn't already been done.
+if [[ ! -d $HOME/.local/bin ]] && which pipx > /dev/null 2>&1 ; then
+  pipx ensurepath
+fi
+
+# Python autocompletion for pipx
+if which register-python-argcomplete > /dev/null 2>&1 && which pipx > /dev/null 2>&1 ; then
+  eval "$(register-python-argcomplete pipx)"
+fi
+
 OS="$(uname -s)"
 
 # Detect external keyboard

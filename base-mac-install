@@ -58,21 +58,24 @@ brew install composer
 brew install iterm2
 
 #
+# Python
+#
+brew install pipx
+
+#
 # PHP. Lots of PHP.
 #
 brew tap shivammathur/php
+brew install shivammathur/php/php@8.5
 brew install shivammathur/php/php@8.2
-brew install shivammathur/php/php@8.1
-brew install shivammathur/php/php@8.0
 brew install shivammathur/php/php@7.4
 
 brew tap shivammathur/extensions
+brew install shivammathur/extensions/pcov@8.5
 brew install shivammathur/extensions/pcov@8.2
-brew install shivammathur/extensions/pcov@8.1
-brew install shivammathur/extensions/pcov@8.0
 brew install shivammathur/extensions/pcov@7.4
 
-brew link --force --overwrite shivammathur/php/php@8.2
+brew link --force --overwrite shivammathur/php/php@8.5
 
 #
 # Pantheon security
