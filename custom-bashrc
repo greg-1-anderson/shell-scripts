@@ -54,8 +54,8 @@ fi
 
 OS="$(uname -s)"
 
-# Detect external keyboard
-if which hidutil > /dev/null 2>&1 ; then
+# Detect external keyboard. NOTE: MacOS Sequia correctly identifies my external keyboard now, so this is not needed
+if false && which hidutil > /dev/null 2>&1 ; then
   if ioreg -p IOUSB | grep -q 'USB Gaming Keyboard' ; then
     # Remap tilda / backtick key for external keyboard.
     # NOTE: This changes tilda / backtick to the wrong characters on the built-in keyboard
