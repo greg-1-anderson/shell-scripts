@@ -71,7 +71,7 @@ foreach ($properties as $property => $comment) {
             }
         } else {
             $value = str_replace($home, '${HOME}', $value);
-            $value = "'$value'";
+            $value = "\"$value\"";
         }
         if (!empty($comment)) {
             print "\n# $comment\n";
