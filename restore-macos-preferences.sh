@@ -105,7 +105,7 @@ chflags nohidden ~/Library
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # Kill affected apps
-for app in "Dock" "Finder"; do
+for app in "Dock" "Finder" "ControlCenter"; do
   killall "${app}" > /dev/null 2>&1
 done
 
