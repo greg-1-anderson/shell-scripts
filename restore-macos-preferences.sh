@@ -1,7 +1,14 @@
 #!/bin/bash
 
+# Before running:
+#
+#   1. Open System Settings
+#   2. Navigate to Privacy & Security > Full Disk Access
+#   3. Find Terminal in the list and toggle the switch to On
+#   4. Restart Terminal
+
 # Always show scrollbars
-defaults write NSGlobalDomain AppleShowScrollBars -string 'Always'
+defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 
 # Disable the “Are you sure you want to open this application?” dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
@@ -22,16 +29,16 @@ defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
 # System Preferences > Keyboard >
-defaults write NSGlobalDomain KeyRepeat -int 5
+defaults write NSGlobalDomain KeyRepeat -int 2
 
 # System Preferences > Keyboard >
-defaults write NSGlobalDomain InitialKeyRepeat -int 26
+defaults write NSGlobalDomain InitialKeyRepeat -int 15
 
 # System Preferences > Dock > Automatically hide and show the Dock
 defaults write com.apple.dock autohide -bool false
 
 # System Preferences > Accessibility > Mouse & Trackpad
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad '{
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad -string '{
     Clicking = 0;
     DragLock = 0;
     Dragging = 0;
@@ -62,7 +69,7 @@ defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad '{
 defaults write com.apple.universalaccess mouseDriverCursorSize -int 2
 
 # System Preferences > Accessibility > Display > Pointer > Pointer Fill Color
-defaults write com.apple.universalaccess cursorFill '{
+defaults write com.apple.universalaccess cursorFill -string '{
     alpha = 1;
     blue = 0;
     green = "0.1491314173";
@@ -80,7 +87,20 @@ defaults write com.apple.finder _FXSortFoldersFirst -bool true
 
 # Location to save screenshots
 mkdir -p "${HOME}/Pictures/Screenshots"
-defaults write com.apple.screencapture location -string '${HOME}/Pictures/Screenshots'
+defaults write com.apple.screencapture location -string "${HOME}/Pictures/Screenshots"
+
+# Reduce system-wide transparency (Accessibility > Display)
+defaults write com.apple.universalaccess reduceTransparency -bool true
+
+# Reduce system motion/animations (Accessibility > Motion)
+defaults write com.apple.universalaccess reduceMotion -bool true
+
+# Force a solid background on the Menu Bar
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-0" -bool true
+defaults write com.apple.MenuBar showMenuBarBackground -bool true
+
+# Show the ~/Library folder
+chflags nohidden ~/Library
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 

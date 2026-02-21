@@ -44,6 +44,14 @@ $properties = [
     'com.apple.Safari AutoOpenSafeDownloads'                  => 'Prevent Safari from opening ‘safe’ files automatically after downloading',
 
     'NSGlobalDomain WebKitDeveloperExtras'                    => 'Add a context menu item for showing the Web Inspector in web views',
+
+    // Tahoe settings
+    'com.apple.universalaccess reduceTransparency'            => 'Reduce system-wide transparency (Accessibility > Display)',
+    'com.apple.universalaccess reduceMotion'                  => 'Reduce system motion/animations (Accessibility > Motion)',
+    'com.apple.controlcenter "NSStatusItem Visible Item-0"'   => 'Force a solid background on the Menu Bar',
+    'com.apple.MenuBar showMenuBarBackground'                 => '',
+    'com.apple.SwiftUI.DisableSolarium'                      => 'Disable the Liquid Glass "Solarium" rendering engine globally',
+
 ];
 
 $home = getenv('HOME');
@@ -52,6 +60,12 @@ $home = getenv('HOME');
 print <<< __EOT__
 #!/bin/bash
 
+# Before running:
+#
+#   1. Open System Settings
+#   2. Navigate to Privacy & Security > Full Disk Access
+#   3. Find Terminal in the list and toggle the switch to On
+#   4. Restart Terminal
 
 __EOT__;
 
@@ -71,10 +85,18 @@ foreach ($properties as $property => $comment) {
             }
         } else {
             $value = str_replace($home, '${HOME}', $value);
-            $value = "\"$value\"";
+            if (strpos($value, "\n") !== false) {
+                $value = "'$value'";
+            }
+            else {
+                $value = "\"$value\"";
+            }
         }
         if (!empty($comment)) {
             print "\n# $comment\n";
+        }
+        if (strpos($value, '${HOME}')) {
+            print "mkdir -p $value\n";
         }
         print "defaults write $property $type $value\n";
     }
@@ -97,3 +119,5 @@ done
 echo "Done. Note that some of these changes require a logout/restart to take effect."
 
 __EOT__;
+
+
