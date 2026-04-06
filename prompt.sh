@@ -59,17 +59,15 @@ __prompt_info()
 
 }
 
-if [ "`type __drush_ps1 2> /dev/null`" == "" ] ; then
-  __drush_ps1() {
-    return 0
-  }
-fi
-
 if [ "x$TERM" != "xcygwin" ] ; then
-  HOSTNAME=$(hostname -s)
-  if [ "$HOSTNAME" == "vps" ] || [ "$HOSTNAME" == "server" ] ; then
-    HOSTNAME=$(hostname -f | sed -e 's/^[^.]*\.//' -e 's/\..*//')
+  HOSTNAME="$(hostname -s| sed -e 's/LDT29M63GP-greg/owl/')"
+  #if [ "$HOSTNAME" == "vps" ] || [ "$HOSTNAME" == "server" ] ; then
+  #  HOSTNAME=$(hostname -f | sed -e 's/^[^.]*\.//' -e 's/\..*//')
+  #fi
+  prompt_color="$c_green"
+  if [ -n "$SSH_CLIENT" ] ; then
+    prompt_color="$c_red"
   fi
   PROMPT_COMMAND='_p=$(__prompt_info)'
-  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@'"$HOSTNAME"':\w\[\e[$c_reset\]\[\e[$c_green\]$(__drush_ps1)\[\e[$c_reset\]$ '
+  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@\[\e[$prompt_color\]'"$HOSTNAME"'\[\e[$c_blue\]:\w\[\e[$c_reset\]$ '
 fi
