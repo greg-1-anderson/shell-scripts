@@ -2,8 +2,11 @@
 c_red='0;31m'
 c_green='0;32m'
 c_blue='0;34m'
+c_white='97m'
 c_lt_grey='0;37m'
 c_reset='0m'
+bg_red='41m'
+bg_green='42m'
 
 __prompt_color()
 {
@@ -65,9 +68,11 @@ if [ "x$TERM" != "xcygwin" ] ; then
   #  HOSTNAME=$(hostname -f | sed -e 's/^[^.]*\.//' -e 's/\..*//')
   #fi
   prompt_color="$c_green"
+  prompt_bg="$bg_green"
   if [ -n "$SSH_CLIENT" ] ; then
     prompt_color="$c_red"
+    prompt_bg="$bg_red"
   fi
   PROMPT_COMMAND='_p=$(__prompt_info)'
-  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@\[\e[$prompt_color\]'"$HOSTNAME"'\[\e[$c_blue\]:\w\[\e[$c_reset\]$ '
+  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@\[\e[$prompt_color\]\[\e[$prompt_bg\]\[\e[$c_white\]('"$HOSTNAME"')\[\e[$c_reset\]\[\e[$prompt_color\]\[\e[$c_reset\]\[\e[$c_blue\]:\w\[\e[$c_reset\]$ '
 fi
