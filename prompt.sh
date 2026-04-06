@@ -74,5 +74,5 @@ if [ "x$TERM" != "xcygwin" ] ; then
     prompt_bg="$bg_red"
   fi
   PROMPT_COMMAND='_p=$(__prompt_info)'
-  PS1='${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@\[\e[$prompt_color\]\[\e[$prompt_bg\]\[\e[$c_white\]('"$HOSTNAME"')\[\e[$c_reset\]\[\e[$prompt_color\]\[\e[$c_reset\]\[\e[$c_blue\]:\w\[\e[$c_reset\]$ '
+  PS1='\t ${_p:0:1}\[\e[$(__prompt_color)\]${_p:1:$((${#_p}-3))}\[\e[$c_reset\]${_p#"${_p%??}"}\[\e[$c_blue\]\u@\[\e[$prompt_color\]\[\e[$prompt_bg\]\[\e[$c_white\]('"$HOSTNAME"')\[\e[$c_reset\]\[\e[$prompt_color\]\[\e[$c_reset\]\[\e[$c_blue\]:\w\[\e[$c_reset\]$ '
 fi
