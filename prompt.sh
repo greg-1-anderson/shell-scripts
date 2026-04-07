@@ -22,19 +22,6 @@ __prompt_color()
     return 0
   fi
 
-  # Use svn colors if we have a .svn directory
-  if [ -d .svn ]
-  then
-    svnstatusoutput="`svn status 2>/dev/null | grep -v '^\?'`"
-    if [ -z "$svnstatusoutput" ]
-    then
-      echo $c_green
-    else
-      echo $c_red
-    fi
-    return 0
-  fi
-
   echo $c_reset
   return 0
 }
@@ -48,18 +35,6 @@ __prompt_info()
     echo -e "[${gitver}] "
     return 0
   fi
-
-  # Emit the svn revision if we have a .svn directory
-  if [ -d .svn ]
-  then
-    svnrev=$(svn info 2>/dev/null | grep '^Revision' | sed -e 's/^[^:]*: *//g')
-    if [ -n "$svnrev" ]
-    then
-      echo -e "(r${svnrev}) "
-    fi
-    return 0
-  fi
-
 }
 
 if [ "x$TERM" != "xcygwin" ] ; then
