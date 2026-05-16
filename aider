@@ -13,10 +13,14 @@
 set -euo pipefail
 
 # --- CONFIG (at least it's all at the top) ---
-EXPECTED_TAILNET="reelrt.github"
-DEFAULT_MODEL="ollama/gpt-oss:120b"
-OLLAMA_MACHINE="gx10-89bb"
-OLLAMA_PORT="11434"
+# Expected tailnet (can be overridden via EXPECTED_TAILNET env var)
+_EXPECTED_TAILNET="${EXPECTED_TAILNET:-reelrt.github}"
+# Default model (can be overridden via DEFAULT_MODEL env var)
+_DEFAULT_MODEL="${DEFAULT_MODEL:-ollama/gpt-oss:120b}"
+# Ollama machine (can be overridden via OLLAMA_MACHINE env var)
+_OLLAMA_MACHINE="${OLLAMA_MACHINE:-gx10-89bb}"
+# Ollama port (can be overridden via OLLAMA_PORT env var)
+_OLLAMA_PORT="${OLLAMA_PORT:-11434}"
 
 # --- CHECK TAILNET ---
 if ! command -v tailscale >/dev/null 2>&1; then
@@ -26,21 +30,21 @@ fi
 
 CURRENT_TAILNET=$(tailscale status --json | jq -r '.CurrentTailnet.Name')
 
-if [[ "$CURRENT_TAILNET" != "$EXPECTED_TAILNET" ]]; then
+if [[ "$CURRENT_TAILNET" != "$_EXPECTED_TAILNET" ]]; then
   echo "Error: Not on the expected tailnet." >&2
-  echo "Expected: $EXPECTED_TAILNET" >&2
+  echo "Expected: $_EXPECTED_TAILNET" >&2
   echo "Current:  $CURRENT_TAILNET" >&2
   exit 1
 fi
 
 # --- RESOLVE HOST ---
-if ! ping -c 1 "$OLLAMA_MACHINE" >/dev/null 2>&1; then
-  echo "Error: Cannot reach $OLLAMA_MACHINE on tailnet" >&2
+if ! ping -c 1 "$_OLLAMA_MACHINE" >/dev/null 2>&1; then
+  echo "Error: Cannot reach $_OLLAMA_MACHINE on tailnet" >&2
   exit 1
 fi
 
 # --- SET OLLAMA ENDPOINT ---
-export OLLAMA_API_BASE="http://${OLLAMA_MACHINE}:${OLLAMA_PORT}"
+export OLLAMA_API_BASE="http://$_OLLAMA_MACHINE:$_OLLAMA_PORT"
 
 # --- OPTIONAL: suppress OpenAI key requirement ---
 export OPENAI_API_KEY="none"
@@ -70,7 +74,7 @@ if [ ! -d "$HOME/.venvs/aider/bin/aider" ] ; then
 fi
 
 # --- DEFAULT MODEL HANDLING ---
-MODEL_ARGS=(--model $DEFAULT_MODEL)
+MODEL_ARGS=(--model $_DEFAULT_MODEL)
 
 for arg in "$@"; do
   if [[ "$arg" == "--model" ]] || [[ "$arg" == --model=* ]]; then
