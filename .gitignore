@@ -1,2 +1,3 @@
 export_script.sh
 clone-local-working-copies.sh
+.aider*
