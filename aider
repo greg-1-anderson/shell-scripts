@@ -7,19 +7,19 @@
 # automatically install Python 3.11 and Aider
 # if it's not available yet.
 #
-# TODO: Make it configurable. I only use it one
-# way at the moment. PRs welcome.
+# Configure with environment variables:
+#
+#   EXPECTED_TAILNET: Tailnet where the Ollama server is found
+#   DEFAULT_MODEL: Model to use. Override with --model
+#   OLLAMA_MACHINE: The hostname where the Ollama server is running
+#   OLLAMA_PORT: Defaults to the usual value
 #
 set -euo pipefail
 
-# --- CONFIG (at least it's all at the top) ---
-# Expected tailnet (can be overridden via EXPECTED_TAILNET env var)
+# --- CONFIG ---
 _EXPECTED_TAILNET="${EXPECTED_TAILNET:-reelrt.github}"
-# Default model (can be overridden via DEFAULT_MODEL env var)
 _DEFAULT_MODEL="${DEFAULT_MODEL:-ollama/gpt-oss:120b}"
-# Ollama machine (can be overridden via OLLAMA_MACHINE env var)
 _OLLAMA_MACHINE="${OLLAMA_MACHINE:-gx10-89bb}"
-# Ollama port (can be overridden via OLLAMA_PORT env var)
 _OLLAMA_PORT="${OLLAMA_PORT:-11434}"
 
 # --- CHECK TAILNET ---
