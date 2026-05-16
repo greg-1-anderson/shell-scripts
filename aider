@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+#
+# Aider wrapper script
+#
+# Aider requires Python 3.11; this script will
+# automatically install Python 3.11 and Aider
+# if it's not available yet.
+#
+# TODO: Make it configurable. I only use it one
+# way at the moment. PRs welcome.
+#
+set -euo pipefail
+
+# --- CONFIG (at least it's all at the top) ---
+EXPECTED_TAILNET="reelrt.github"
+DEFAULT_MODEL="ollama/gpt-oss:120b"
+OLLAMA_MACHINE="gx10-89bb"
+OLLAMA_PORT="11434"
+
+# --- CHECK TAILNET ---
+if ! command -v tailscale >/dev/null 2>&1; then
+  echo "Error: tailscale not installed or not in PATH" >&2
+  exit 1
+fi
+
+CURRENT_TAILNET=$(tailscale status --json | jq -r '.CurrentTailnet.Name')
+
+if [[ "$CURRENT_TAILNET" != "$EXPECTED_TAILNET" ]]; then
+  echo "Error: Not on the expected tailnet." >&2
+  echo "Expected: $EXPECTED_TAILNET" >&2
+  echo "Current:  $CURRENT_TAILNET" >&2
+  exit 1
+fi
+
+# --- RESOLVE HOST ---
+if ! ping -c 1 "$OLLAMA_MACHINE" >/dev/null 2>&1; then
+  echo "Error: Cannot reach $OLLAMA_MACHINE on tailnet" >&2
+  exit 1
+fi
+
+# --- SET OLLAMA ENDPOINT ---
+export OLLAMA_API_BASE="http://${OLLAMA_MACHINE}:${OLLAMA_PORT}"
+
+# --- OPTIONAL: suppress OpenAI key requirement ---
+export OPENAI_API_KEY="none"
+
+if ! command -v python3.11 >/dev/null 2>&1; then
+  echo "🛠️ Python 3.11 not found. Installing with Homebrew..."
+  brew install python@3.11
+fi
+
+# --- Python virtual environment
+
+if [ ! -d "$HOME/.venvs/aider" ] ; then
+  echo "🛠️ Setting up virtual environment..."
+  mkdir -p "$HOME/.venvs/aider"
+  python3.11 -m venv "$HOME/.venvs/aider"
+fi
+
+# --- Make sure the right version of Python is active
+source "$HOME/.venvs/aider/bin/activate"
+
+# --- Make sure that Aider is available
+
+if [ ! -d "$HOME/.venvs/aider/bin/aider" ] ; then
+  echo "🛠️ Installing Aider"
+  pip install --upgrade pip setuptools wheel
+  pip install aider-chat
+fi
+
+# --- DEFAULT MODEL HANDLING ---
+MODEL_ARGS=(--model $DEFAULT_MODEL)
+
+for arg in "$@"; do
+  if [[ "$arg" == "--model" ]] || [[ "$arg" == --model=* ]]; then
+    MODEL_ARGS=()
+    break
+  fi
+done
+
+# --- RUN AIDER ---
+exec "$HOME/.venvs/aider/bin/aider" "${MODEL_ARGS[@]}" "$@"
