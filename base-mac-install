@@ -85,9 +85,13 @@ brew install yubico-piv-tool ykpers opensc
 #
 # Some front-end tools
 #
-#brew install node nodejs
-#gem install bundler
-#gem install foreman
+brew install node nodejs yarn
+
+# This complains that I don't have the gem bin directory
+# in my PATH, and the latest version of bundler requires
+# gem 3 and I have gem 2. Procrastinating on fixing this
+# until I actually need these tools.
+#gem install bundler foreman --user-install
 
 # brew install chruby ruby-install
 # ruby-install ruby 2.0
