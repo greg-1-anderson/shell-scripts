@@ -145,6 +145,16 @@ function php-switch() {
   fi
 }
 
+function pbrew() {
+  if [ -z "$HOMEBREW_GITHUB_API_TOKEN" ]; then
+    if ! gh auth status &>/dev/null; then
+      gh auth login --git-protocol https --hostname github.com --web
+    fi
+    export HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)"
+  fi
+  brew "$@"
+}
+
 if [ "$OS" == "Darwin" ] ; then
   alias ssh-copy-id='ssh-copy-id.sh'
 fi
