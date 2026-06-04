@@ -28,6 +28,13 @@ Install all of the non-open Codec packages needed for multimedia access on Ubunt
 - `exodus`
 Create a working local instance of one or more Pantheon sites; presumes target is using a LAMP stack.
 
+- `gh-api-safe`
+A read-only wrapper around `gh api`. Passes through all parameters for commands known to be read-only.
+
+Add these instructions to $HOME/.claude/Claude.md:
+
+	- When you need to call `gh api`, run `gh-api-safe` instead (same arguments). It is a read-only safety wrapper that allows known-safe GET endpoints and blocks write operations. If `gh-api-safe` exits 77 (not allowed), fall back to `gh api` with normal prompting. Do not prompt the user before trying `gh-api-safe`; only prompt if the fallback to `gh api` is needed.
+
 - `gsvn`
 Provides an svn-like wrapper tool to access Git repositories using svn syntax.
 

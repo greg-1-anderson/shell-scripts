@@ -1,0 +1,448 @@
+#!/usr/bin/env bash
+# gh-api-safe — read-only wrapper for 'gh api'.
+#
+# Only forwards requests that are provably read-only:
+#   1. The endpoint must match the built-in allow-list.
+#   2. No flags that introduce a request body or change the HTTP method
+#      away from GET/HEAD.
+#
+# Exits 77 (EX_NOPERM from sysexits) when a request is blocked.
+#
+# Because -f/--field is blocked (it switches the default method to POST),
+# pass query parameters directly in the URL:
+#   gh-api-safe 'repos/owner/repo/issues?state=open&per_page=100'
+
+set -euo pipefail
+
+readonly EX_NOPERM=77
+readonly SELF="${0##*/}"
+
+die_blocked() {
+    printf '%s: not allowed — %s\n' "$SELF" "$1" >&2
+    exit "$EX_NOPERM"
+}
+
+if [[ $# -eq 0 ]]; then
+    cat >&2 <<EOF
+Usage: $SELF <endpoint> [gh-api flags...]
+
+Read-only wrapper for 'gh api'. Forwards the request only when the
+endpoint is in the allow-list and no write-enabling flags are present.
+
+Exits $EX_NOPERM (EX_NOPERM) when a request is blocked.
+Exits with gh's own code on API errors.
+
+Pass query parameters in the URL, not via -f (which is blocked):
+  $SELF 'repos/owner/repo/issues?state=open&per_page=100'
+
+Safe flags (passed through):
+  --paginate       --jq -q          --template -t
+  --cache          --header -H      --include -i
+  --silent         --slurp          --verbose
+  --hostname       --preview -p
+EOF
+    exit 2
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 1: scan arguments — extract API path, detect method, block writes
+# ---------------------------------------------------------------------------
+
+api_path=""
+method=""
+i=1
+
+while [[ $i -le $# ]]; do
+    arg="${!i}"
+    case "$arg" in
+        # ---- Write-enabling flags: block immediately ----
+        #   -f / --raw-field   (adds string params, changes default to POST)
+        #   -F / --field       (adds typed params, changes default to POST)
+        #   --input            (provides request body)
+        -[fF])
+            die_blocked "flag $arg sets request body fields (changes default method to POST)" ;;
+        -[fF]?*)
+            die_blocked "flag ${arg:0:2} sets request body fields (changes default method to POST)" ;;
+        --field|--field=*)
+            die_blocked "--field/-F sets request body fields (changes default method to POST)" ;;
+        --raw-field|--raw-field=*)
+            die_blocked "--raw-field/-f sets request body fields (changes default method to POST)" ;;
+        --input|--input=*)
+            die_blocked "--input provides a request body" ;;
+
+        # ---- Method flag: capture for validation ----
+        -X)
+            ((i++))
+            [[ $i -le $# ]] || die_blocked "-X requires a value"
+            method="${!i}" ;;
+        -X?*)
+            method="${arg:2}" ;;
+        --method)
+            ((i++))
+            [[ $i -le $# ]] || die_blocked "--method requires a value"
+            method="${!i}" ;;
+        --method=*)
+            method="${arg#--method=}" ;;
+
+        # ---- Safe flags that consume the next argument ----
+        #   -q/--jq  -t/--template  -H/--header  -p/--preview
+        #   --cache  --hostname
+        --cache|--hostname|--jq|--preview|-[qtHp])
+            ((i++)) ;;
+
+        # ---- Other flags (booleans, --key=val forms): skip ----
+        -*) ;;
+
+        # ---- Positional: first one is the API endpoint ----
+        *)
+            [[ -z "$api_path" ]] && api_path="$arg" ;;
+    esac
+    ((i++))
+done
+
+# ---------------------------------------------------------------------------
+# Phase 2: validate HTTP method
+# ---------------------------------------------------------------------------
+
+if [[ -n "$method" ]]; then
+    method_upper="$(printf '%s' "$method" | tr '[:lower:]' '[:upper:]')"
+    case "$method_upper" in
+        GET|HEAD) ;;
+        *) die_blocked "method '$method' is not read-only (only GET and HEAD are allowed)" ;;
+    esac
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 3: normalize API path
+# ---------------------------------------------------------------------------
+
+[[ -n "$api_path" ]] || die_blocked "no API endpoint provided"
+
+path="$api_path"
+path="${path#https://api.github.com/}"   # strip full-URL prefix
+path="${path#/}"                          # strip leading slash
+path="${path%%\?*}"                       # strip query string
+path="${path%/}"                          # strip trailing slash
+
+# ---------------------------------------------------------------------------
+# Phase 4: match against read-only allow-list
+#
+# S = single path segment (no slashes):  [^/]+
+# P = multi-segment path (with slashes): .+
+# ---------------------------------------------------------------------------
+
+S='[^/]+'
+P='.+'
+
+PATTERNS=(
+    # ====================== Repositories ======================
+    "repos/$S/$S"
+    "repos/$S/$S/autolinks"
+    "repos/$S/$S/autolinks/$S"
+    "repos/$S/$S/branches"
+    "repos/$S/$S/branches/$S"
+    "repos/$S/$S/branches/$S/protection"
+    "repos/$S/$S/branches/$S/protection/enforce_admins"
+    "repos/$S/$S/branches/$S/protection/required_pull_request_reviews"
+    "repos/$S/$S/branches/$S/protection/required_signatures"
+    "repos/$S/$S/branches/$S/protection/required_status_checks"
+    "repos/$S/$S/branches/$S/protection/required_status_checks/contexts"
+    "repos/$S/$S/branches/$S/protection/restrictions"
+    "repos/$S/$S/branches/$S/protection/restrictions/apps"
+    "repos/$S/$S/branches/$S/protection/restrictions/teams"
+    "repos/$S/$S/branches/$S/protection/restrictions/users"
+    "repos/$S/$S/codeowners/errors"
+    "repos/$S/$S/collaborators"
+    "repos/$S/$S/collaborators/$S"
+    "repos/$S/$S/collaborators/$S/permission"
+    "repos/$S/$S/comments"
+    "repos/$S/$S/comments/$S"
+    "repos/$S/$S/comments/$S/reactions"
+    "repos/$S/$S/commits"
+    "repos/$S/$S/commits/$S"
+    "repos/$S/$S/commits/$S/branches-where-head"
+    "repos/$S/$S/commits/$S/comments"
+    "repos/$S/$S/commits/$S/pulls"
+    "repos/$S/$S/compare/$P"
+    "repos/$S/$S/contents"
+    "repos/$S/$S/contents/$P"
+    "repos/$S/$S/contributors"
+    "repos/$S/$S/dependency-graph/sbom"
+    "repos/$S/$S/deployments"
+    "repos/$S/$S/deployments/$S"
+    "repos/$S/$S/deployments/$S/statuses"
+    "repos/$S/$S/deployments/$S/statuses/$S"
+    "repos/$S/$S/environments"
+    "repos/$S/$S/environments/$S"
+    "repos/$S/$S/events"
+    "repos/$S/$S/forks"
+    "repos/$S/$S/hooks"
+    "repos/$S/$S/hooks/$S"
+    "repos/$S/$S/hooks/$S/deliveries"
+    "repos/$S/$S/hooks/$S/deliveries/$S"
+    "repos/$S/$S/languages"
+    "repos/$S/$S/license"
+    "repos/$S/$S/milestones"
+    "repos/$S/$S/milestones/$S"
+    "repos/$S/$S/milestones/$S/labels"
+    "repos/$S/$S/readme"
+    "repos/$S/$S/readme/$P"
+    "repos/$S/$S/releases"
+    "repos/$S/$S/releases/$S"
+    "repos/$S/$S/releases/$S/assets"
+    "repos/$S/$S/releases/$S/assets/$S"
+    "repos/$S/$S/releases/latest"
+    "repos/$S/$S/releases/tags/$S"
+    "repos/$S/$S/rulesets"
+    "repos/$S/$S/rulesets/$S"
+    "repos/$S/$S/rules/branches/$S"
+    "repos/$S/$S/stargazers"
+    "repos/$S/$S/subscribers"
+    "repos/$S/$S/subscription"
+    "repos/$S/$S/tags"
+    "repos/$S/$S/teams"
+    "repos/$S/$S/topics"
+
+    # ====================== Repo traffic & stats ======================
+    "repos/$S/$S/traffic/clones"
+    "repos/$S/$S/traffic/popular/paths"
+    "repos/$S/$S/traffic/popular/referrers"
+    "repos/$S/$S/traffic/views"
+    "repos/$S/$S/stats/contributors"
+    "repos/$S/$S/stats/commit_activity"
+    "repos/$S/$S/stats/code_frequency"
+    "repos/$S/$S/stats/participation"
+    "repos/$S/$S/stats/punch_card"
+    "repos/$S/$S/community/profile"
+
+    # ====================== Issues ======================
+    "repos/$S/$S/issues"
+    "repos/$S/$S/issues/$S"
+    "repos/$S/$S/issues/$S/comments"
+    "repos/$S/$S/issues/$S/comments/$S"
+    "repos/$S/$S/issues/$S/events"
+    "repos/$S/$S/issues/$S/labels"
+    "repos/$S/$S/issues/$S/reactions"
+    "repos/$S/$S/issues/$S/timeline"
+    "repos/$S/$S/issues/comments"
+    "repos/$S/$S/issues/comments/$S"
+    "repos/$S/$S/issues/comments/$S/reactions"
+    "repos/$S/$S/issues/events"
+    "repos/$S/$S/issues/events/$S"
+    "repos/$S/$S/labels"
+    "repos/$S/$S/labels/$S"
+    "repos/$S/$S/assignees"
+    "repos/$S/$S/assignees/$S"
+
+    # ====================== Pull requests ======================
+    "repos/$S/$S/pulls"
+    "repos/$S/$S/pulls/$S"
+    "repos/$S/$S/pulls/$S/comments"
+    "repos/$S/$S/pulls/$S/comments/$S"
+    "repos/$S/$S/pulls/$S/comments/$S/reactions"
+    "repos/$S/$S/pulls/$S/commits"
+    "repos/$S/$S/pulls/$S/files"
+    "repos/$S/$S/pulls/$S/merge"
+    "repos/$S/$S/pulls/$S/requested_reviewers"
+    "repos/$S/$S/pulls/$S/reviews"
+    "repos/$S/$S/pulls/$S/reviews/$S"
+    "repos/$S/$S/pulls/$S/reviews/$S/comments"
+    "repos/$S/$S/pulls/comments"
+    "repos/$S/$S/pulls/comments/$S"
+    "repos/$S/$S/pulls/comments/$S/reactions"
+
+    # ====================== Checks & statuses ======================
+    "repos/$S/$S/check-runs/$S"
+    "repos/$S/$S/check-runs/$S/annotations"
+    "repos/$S/$S/check-suites/$S"
+    "repos/$S/$S/check-suites/$S/check-runs"
+    "repos/$S/$S/commits/$S/check-runs"
+    "repos/$S/$S/commits/$S/check-suites"
+    "repos/$S/$S/commits/$S/status"
+    "repos/$S/$S/commits/$S/statuses"
+
+    # ====================== Actions ======================
+    "repos/$S/$S/actions/artifacts"
+    "repos/$S/$S/actions/artifacts/$S"
+    "repos/$S/$S/actions/caches"
+    "repos/$S/$S/actions/jobs/$S"
+    "repos/$S/$S/actions/jobs/$S/logs"
+    "repos/$S/$S/actions/permissions"
+    "repos/$S/$S/actions/runners"
+    "repos/$S/$S/actions/runners/$S"
+    "repos/$S/$S/actions/runs"
+    "repos/$S/$S/actions/runs/$S"
+    "repos/$S/$S/actions/runs/$S/approvals"
+    "repos/$S/$S/actions/runs/$S/artifacts"
+    "repos/$S/$S/actions/runs/$S/attempts/$S"
+    "repos/$S/$S/actions/runs/$S/attempts/$S/jobs"
+    "repos/$S/$S/actions/runs/$S/attempts/$S/logs"
+    "repos/$S/$S/actions/runs/$S/jobs"
+    "repos/$S/$S/actions/runs/$S/logs"
+    "repos/$S/$S/actions/runs/$S/timing"
+    "repos/$S/$S/actions/workflows"
+    "repos/$S/$S/actions/workflows/$S"
+    "repos/$S/$S/actions/workflows/$S/runs"
+    "repos/$S/$S/actions/workflows/$S/timing"
+
+    # ====================== Code / secret / Dependabot scanning ======================
+    "repos/$S/$S/code-scanning/alerts"
+    "repos/$S/$S/code-scanning/alerts/$S"
+    "repos/$S/$S/code-scanning/alerts/$S/instances"
+    "repos/$S/$S/code-scanning/analyses"
+    "repos/$S/$S/code-scanning/analyses/$S"
+    "repos/$S/$S/secret-scanning/alerts"
+    "repos/$S/$S/secret-scanning/alerts/$S"
+    "repos/$S/$S/dependabot/alerts"
+    "repos/$S/$S/dependabot/alerts/$S"
+
+    # ====================== Git data ======================
+    "repos/$S/$S/git/blobs/$S"
+    "repos/$S/$S/git/commits/$S"
+    "repos/$S/$S/git/matching-refs/$P"
+    "repos/$S/$S/git/ref/$P"
+    "repos/$S/$S/git/refs"
+    "repos/$S/$S/git/tags/$S"
+    "repos/$S/$S/git/trees/$S"
+
+    # ====================== Pages ======================
+    "repos/$S/$S/pages"
+    "repos/$S/$S/pages/builds"
+    "repos/$S/$S/pages/builds/$S"
+    "repos/$S/$S/pages/builds/latest"
+
+    # ====================== Security ======================
+    "repos/$S/$S/security-advisories"
+    "repos/$S/$S/security-advisories/$S"
+    "repos/$S/$S/vulnerability-alerts"
+
+    # ====================== Repo notifications ======================
+    "repos/$S/$S/notifications"
+
+    # ====================== Users ======================
+    "user"
+    "user/emails"
+    "user/followers"
+    "user/following"
+    "user/following/$S"
+    "user/gpg_keys"
+    "user/gpg_keys/$S"
+    "user/installations"
+    "user/keys"
+    "user/keys/$S"
+    "user/orgs"
+    "user/repos"
+    "user/starred"
+    "user/starred/$S/$S"
+    "user/subscriptions"
+    "user/teams"
+    "users/$S"
+    "users/$S/events"
+    "users/$S/events/orgs/$S"
+    "users/$S/events/public"
+    "users/$S/followers"
+    "users/$S/following"
+    "users/$S/following/$S"
+    "users/$S/gists"
+    "users/$S/gpg_keys"
+    "users/$S/hovercard"
+    "users/$S/keys"
+    "users/$S/orgs"
+    "users/$S/received_events"
+    "users/$S/received_events/public"
+    "users/$S/repos"
+    "users/$S/starred"
+    "users/$S/subscriptions"
+
+    # ====================== Organizations ======================
+    "orgs/$S"
+    "orgs/$S/events"
+    "orgs/$S/hooks"
+    "orgs/$S/hooks/$S"
+    "orgs/$S/installations"
+    "orgs/$S/members"
+    "orgs/$S/members/$S"
+    "orgs/$S/outside_collaborators"
+    "orgs/$S/projects"
+    "orgs/$S/repos"
+    "orgs/$S/teams"
+    "orgs/$S/teams/$S"
+    "orgs/$S/teams/$S/discussions"
+    "orgs/$S/teams/$S/discussions/$S"
+    "orgs/$S/teams/$S/discussions/$S/comments"
+    "orgs/$S/teams/$S/discussions/$S/comments/$S"
+    "orgs/$S/teams/$S/discussions/$S/comments/$S/reactions"
+    "orgs/$S/teams/$S/discussions/$S/reactions"
+    "orgs/$S/teams/$S/members"
+    "orgs/$S/teams/$S/repos"
+    "orgs/$S/teams/$S/repos/$S/$S"
+    "orgs/$S/teams/$S/teams"
+
+    # ====================== Projects (classic) ======================
+    "projects/$S"
+    "projects/$S/collaborators"
+    "projects/$S/columns"
+    "projects/columns/$S"
+    "projects/columns/$S/cards"
+    "projects/columns/cards/$S"
+
+    # ====================== Search ======================
+    "search/code"
+    "search/commits"
+    "search/issues"
+    "search/labels"
+    "search/repositories"
+    "search/topics"
+    "search/users"
+
+    # ====================== Gists ======================
+    "gists"
+    "gists/$S"
+    "gists/$S/comments"
+    "gists/$S/comments/$S"
+    "gists/$S/commits"
+    "gists/$S/forks"
+    "gists/$S/star"
+    "gists/public"
+    "gists/starred"
+
+    # ====================== Notifications ======================
+    "notifications"
+    "notifications/threads/$S"
+    "notifications/threads/$S/subscription"
+
+    # ====================== Events ======================
+    "events"
+    "networks/$S/$S/events"
+
+    # ====================== Rate limit & meta ======================
+    "rate_limit"
+    "meta"
+    "octocat"
+    "zen"
+    "versions"
+    "emojis"
+
+    # ====================== Gitignore & licenses ======================
+    "gitignore/templates"
+    "gitignore/templates/$S"
+    "licenses"
+    "licenses/$S"
+)
+
+matched=false
+for p in "${PATTERNS[@]}"; do
+    if [[ "$path" =~ ^${p}$ ]]; then
+        matched=true
+        break
+    fi
+done
+
+if ! "$matched"; then
+    die_blocked "endpoint '$api_path' is not in the read-only allow-list"
+fi
+
+# ---------------------------------------------------------------------------
+# All checks passed — forward to gh api
+# ---------------------------------------------------------------------------
+exec gh api "$@"
