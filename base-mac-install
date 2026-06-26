@@ -70,6 +70,20 @@ brew install shivammathur/extensions/pcov@8.5
 brew link --force --overwrite shivammathur/php/php@8.5
 
 #
+# Containerization
+#
+brew install docker docker-compose docker-buildx colima
+
+# Ensure Docker config exists and set cliPluginsExtraDirs
+DOCKER_CONFIG="$HOME/.docker/config.json"
+if [ ! -f "$DOCKER_CONFIG" ]; then
+  mkdir -p "$(dirname "$DOCKER_CONFIG")"
+  echo '{}' > "$DOCKER_CONFIG"
+fi
+# Add cliPluginsExtraDirs entry
+jq '. + {"cliPluginsExtraDirs": ["/opt/homebrew/lib/docker/cli-plugins"]}' "$DOCKER_CONFIG" > "$DOCKER_CONFIG.tmp" && mv "$DOCKER_CONFIG.tmp" "$DOCKER_CONFIG"
+
+#
 # AI support
 #
 brew install tailscale
