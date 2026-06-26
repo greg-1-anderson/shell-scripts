@@ -25,6 +25,7 @@ read -r -d '' CLAUDE_MD_CONTENT << 'HEREDOC' || true
 - Never discard someone else's local changes, modified or untracked, in a git working directory unless explicitly told to. Stash them or halt and request user guidance.
 - Do not rewrite git history to avoid "messy" commit history; we will squash on merge, and failed attempts while iterating can include valuable wisdom.
 - Don't change Jira ticket status unless instructed to. e.g. deploying the fix doesn't mean Jira ticket is closed.
+- Never use rm to delete a directory, and use the -r flag with rm. You may delete individual files, but move directories to ~/.claude-trash instead of deleting them.
 
 ## Tooling
 
@@ -243,6 +244,7 @@ if [[ "$answer" =~ ^[Yy]$ ]]; then
   git -C "$CLAUDE_DIR" add "${changed_files[@]}"
   git -C "$CLAUDE_DIR" commit -m "Apply claude-consent settings"
   echo "Changes committed."
+  mkdir -p ~/.claude-trash
 else
   git -C "$CLAUDE_DIR" checkout -- "${changed_files[@]}"
   echo "Changes reverted."
