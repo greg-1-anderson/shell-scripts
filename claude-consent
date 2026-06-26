@@ -1,0 +1,196 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLAUDE_DIR="$HOME/.claude"
+SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+
+# Safe permissions list — everything here gets added to permissions.allow
+SAFE_PERMISSIONS=(
+  'Read'
+  'Read(/Users/greg/Code/pantheon/**)'
+  'WebSearch'
+  'WebFetch(*)'
+  'LS'
+  'Grep'
+  'Glob'
+  'Bash(cd *)'
+  'Bash(ls *)'
+  'Bash(cat *)'
+  'Bash(head *)'
+  'Bash(tail *)'
+  'Bash(wc *)'
+  'Bash(find *)'
+  'Bash(grep *)'
+  'Bash(rg *)'
+  'Bash(ag *)'
+  'Bash(tree *)'
+  'Bash(file *)'
+  'Bash(stat *)'
+  'Bash(du *)'
+  'Bash(df *)'
+  'Bash(pwd)'
+  'Bash(pwd *)'
+  'Bash(pfd *)'
+  'Bash(echo *)'
+  'Bash(which *)'
+  'Bash(type *)'
+  'Bash(env)'
+  'Bash(env *)'
+  'Bash(printenv *)'
+  'Bash(uname *)'
+  'Bash(whoami)'
+  'Bash(id)'
+  'Bash(id *)'
+  'Bash(date *)'
+  'Bash(hostname)'
+  'Bash(diff *)'
+  'Bash(comm *)'
+  'Bash(sort *)'
+  'Bash(uniq *)'
+  'Bash(cut *)'
+  'Bash(awk *)'
+  'Bash(sed -n *)'
+  'Bash(jq *)'
+  'Bash(yq *)'
+  'Bash(xmllint *)'
+  'Bash(git status*)'
+  'Bash(git log*)'
+  'Bash(git diff*)'
+  'Bash(git show*)'
+  'Bash(git branch*)'
+  'Bash(git tag*)'
+  'Bash(git remote*)'
+  'Bash(git rev-parse*)'
+  'Bash(git ls-files*)'
+  'Bash(git ls-tree*)'
+  'Bash(git blame*)'
+  'Bash(git shortlog*)'
+  'Bash(git describe*)'
+  'Bash(git config --get*)'
+  'Bash(git config --list*)'
+  'Bash(git fetch*)'
+  'Bash(git apply*)'
+  'Bash(git add*)'
+  'Bash(git stash list*)'
+  'Bash(gh pr view*)'
+  'Bash(gh pr diff*)'
+  'Bash(gh search*)'
+  'Bash(gh auth status)'
+  'Bash(gh-api-safe*)'
+  'Bash(go build*)'
+  'Bash(npm test*)'
+  'Bash(npm run test*)'
+  'Bash(npx jest*)'
+  'Bash(npx tsc --noEmit*)'
+  'Bash(go vet*)'
+  'Bash(go test*)'
+  'Bash(pytest*)'
+  'Bash(python -m pytest*)'
+  'Bash(python3 -m pytest*)'
+  'Bash(plantuml*)'
+  'Bash(man *)'
+  'Bash(composer show*)'
+  'Bash(composer install*)'
+  'Bash(kubectl get *)'
+  'Bash(kubectl describe *)'
+  'Bash(kubectl logs *)'
+  'Bash(docker ps*)'
+  'Bash(docker images*)'
+  'Bash(docker inspect*)'
+  'Bash(docker logs*)'
+  'Bash(brew list*)'
+  'Bash(brew info*)'
+  'Bash(pip list*)'
+  'Bash(pip show*)'
+  'Bash(npm list*)'
+  'Bash(npm info*)'
+  'Bash(npm view*)'
+  'Bash(npx vitest run*)'
+  'Bash(gcloud config list*)'
+  'Bash(gcloud projects list*)'
+  'Bash(realpath *)'
+  'Bash(dirname *)'
+  'Bash(basename *)'
+  'Bash(md5sum *)'
+  'Bash(shasum *)'
+  'Bash(sha256sum *)'
+  'Bash(xxd *)'
+  'Bash(hexdump *)'
+  'Bash(od *)'
+  'Bash(php -l)'
+  'Bash(acli jira board get*)'
+  'Bash(acli jira board list-projects*)'
+  'Bash(acli jira board list-sprints*)'
+  'Bash(acli jira board search*)'
+  'Bash(acli jira dashboard search*)'
+  'Bash(acli jira filter get*)'
+  'Bash(acli jira filter get-columns*)'
+  'Bash(acli jira filter list*)'
+  'Bash(acli jira filter search*)'
+  'Bash(acli jira project list*)'
+  'Bash(acli jira project view*)'
+  'Bash(acli jira sprint list-workitems*)'
+  'Bash(acli jira sprint view*)'
+  'Bash(acli jira workitem search*)'
+  'Bash(acli jira workitem view*)'
+  'Bash(acli jira workitem attachment list*)'
+  'Bash(acli jira workitem comment list*)'
+  'Bash(acli jira workitem comment visibility*)'
+  'Bash(acli jira workitem link list*)'
+  'Bash(acli jira workitem link type*)'
+  'Bash(acli jira workitem watcher list*)'
+  'Bash(acli confluence blog list*)'
+  'Bash(acli confluence blog view*)'
+  'Bash(acli confluence page view*)'
+  'Bash(acli confluence space list*)'
+  'Bash(acli confluence space view*)'
+)
+
+if [[ ! -f "$SETTINGS_FILE" ]]; then
+  echo "Error: $SETTINGS_FILE not found" >&2
+  exit 1
+fi
+
+if ! command -v jq &>/dev/null; then
+  echo "Error: jq is required but not installed" >&2
+  exit 1
+fi
+
+# Ensure ~/.claude is a git repo
+if ! git -C "$CLAUDE_DIR" rev-parse --git-dir &>/dev/null; then
+  echo "Initializing git repo in $CLAUDE_DIR..."
+  git -C "$CLAUDE_DIR" init
+  git -C "$CLAUDE_DIR" add -A
+  git -C "$CLAUDE_DIR" commit -m "Initial commit"
+fi
+
+# Build JSON array of safe permissions
+safe_json=$(printf '%s\n' "${SAFE_PERMISSIONS[@]}" | jq -R . | jq -s .)
+
+# Merge safe permissions into settings.json:
+# - Add any missing items to permissions.allow (preserving existing ones)
+# - Set defaultMode to acceptEdits
+jq --argjson safe "$safe_json" '
+  .permissions.allow = ((.permissions.allow // []) + $safe | unique) |
+  .permissions.defaultMode = "acceptEdits"
+' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+
+# Show what changed
+echo ""
+if git -C "$CLAUDE_DIR" diff --quiet -- settings.json; then
+  echo "No changes needed — settings.json already has all safe permissions."
+  exit 0
+fi
+
+git -C "$CLAUDE_DIR" diff -- settings.json
+echo ""
+
+read -rp "Accept these changes? [y/N] " answer
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+  git -C "$CLAUDE_DIR" add settings.json
+  git -C "$CLAUDE_DIR" commit -m "Add safe permissions via claude-consent"
+  echo "Changes committed."
+else
+  git -C "$CLAUDE_DIR" checkout -- settings.json
+  echo "Changes reverted."
+fi
