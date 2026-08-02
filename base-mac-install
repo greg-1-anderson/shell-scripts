@@ -60,7 +60,7 @@ brew install iterm2
 #
 # Python, Go and PHP
 #
-brew install pipx
+brew install pipx, python@3.13
 brew install go
 brew tap shivammathur/php
 brew install shivammathur/php/php@8.5
@@ -122,6 +122,7 @@ brew install node nodejs yarn
 #brew install Caskroom/cask/cyberduck
 brew cask install gimp
 brew install --cask sublime-text
+brew install mpg123
 
 # Danger -- don't leave this running too long, it will run away
 # with your cpu and all of your memory.  I can't stand the other
