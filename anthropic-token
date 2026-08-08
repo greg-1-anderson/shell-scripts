@@ -1,0 +1,12 @@
+#
+# Sourcable script that loads ~/.anthropic.rc and decrypts
+# CLAUDE_CODE_OAUTH_TOKEN_ENCRYPTED with show-age, exporting the
+# result as CLAUDE_CODE_OAUTH_TOKEN. Pairs with hide-age/show-age.
+#
+# Usage: source anthropic-token
+#
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source "$HOME/.anthropic.rc"
+export CLAUDE_CODE_OAUTH_TOKEN="$(printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN_ENCRYPTED" | "$SCRIPT_DIR/show-age")"
+unset SCRIPT_DIR
