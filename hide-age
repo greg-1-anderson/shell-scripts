@@ -5,6 +5,8 @@
 # age, with the recipient set to the local SSH public key. Pairs
 # with 'show-age', which decrypts.
 #
+# Uses base64 for output; intended for short secrets.
+#
 key="$HOME/.ssh/id_ed25519"
 if [ ! -f "$key.pub" ] ; then
   key="$HOME/.ssh/id_rsa"
@@ -26,5 +28,6 @@ else
     echo "With no file given, input must be redirected via stdin." >&2
     exit 1
   fi
-  age -R "$key.pub"
+  # Use base64 instead of --armor for more compact output
+  age -R "$key.pub" | base64
 fi

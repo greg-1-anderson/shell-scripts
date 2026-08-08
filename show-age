@@ -19,12 +19,12 @@ if [ $# -gt 1 ] ; then
   echo "Usage: $0 [file]" >&2
   exit 1
 elif [ $# -eq 1 ] ; then
-  age -d -i "$key" "$1"
+  base64 -d "$1" | age -d -i "$key"
 else
   if [ -t 0 ] ; then
     echo "Usage: $0 [file]" >&2
     echo "With no file given, input must be redirected via stdin." >&2
     exit 1
   fi
-  age -d -i "$key"
+  base64 -d | age -d -i "$key"
 fi
