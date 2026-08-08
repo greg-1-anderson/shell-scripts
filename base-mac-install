@@ -56,6 +56,7 @@ brew install bash-completion
 brew install bat
 brew install composer
 brew install iterm2
+brew install age
 
 #
 # Python, Go and PHP

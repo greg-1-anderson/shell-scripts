@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#
+# Encrypts stdin (or the given file, like 'cat') to stdout using
+# age, with the recipient set to the local SSH public key. Pairs
+# with 'show-age', which decrypts.
+#
+key="$HOME/.ssh/id_ed25519"
+if [ ! -f "$key.pub" ] ; then
+  key="$HOME/.ssh/id_rsa"
+fi
+
+if [ ! -f "$key.pub" ] ; then
+  echo "No SSH public key found at $HOME/.ssh/id_ed25519.pub or $HOME/.ssh/id_rsa.pub" >&2
+  exit 1
+fi
+
+if [ $# -gt 1 ] ; then
+  echo "Usage: $0 [file]" >&2
+  exit 1
+elif [ $# -eq 1 ] ; then
+  age -R "$key.pub" "$1"
+else
+  if [ -t 0 ] ; then
+    echo "Usage: $0 [file]" >&2
+    echo "With no file given, input must be redirected via stdin." >&2
+    exit 1
+  fi
+  age -R "$key.pub"
+fi

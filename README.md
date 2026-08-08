@@ -38,6 +38,9 @@ Add these instructions to $HOME/.claude/Claude.md:
 - `gsvn`
 Provides an svn-like wrapper tool to access Git repositories using svn syntax.
 
+- `hide-age`
+Encrypts stdin, or the file given as a single argument, to stdout using `age` and the local SSH public key (`$HOME/.ssh/id_ed25519.pub`, falling back to `id_rsa.pub`). Pairs with `show-age`.
+
 - `remove-dbprefix`
 Remove the db-prefix from a Drupal site that uses one, renaming the sql table names to match.
 
@@ -49,6 +52,9 @@ Configure the preferences on a MacOS system to match a base set of configuration
 
 - `save-macos-preferences.php`
 Write a new version of the `restore-macos-preferences.sh` capturing the current values of all of the preference settings that are saved by these scripts.
+
+- `show-age`
+Decrypts stdin, or the file given as a single argument, to stdout using `age` and the local SSH private key (`$HOME/.ssh/id_ed25519`, falling back to `id_rsa`). Pairs with `hide-age`.
 
 - `sourcelines`
 Make an attempt to count how many lines of code, not including comments, are in a given project.
