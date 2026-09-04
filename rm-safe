@@ -7,8 +7,8 @@
 #
 # Exits 77 (EX_NOPERM from sysexits) when it can't confidently make an
 # argument safe: an unrecognized flag, or a target that resolves to '/' or
-# $HOME itself. That's the same signal gh-api-safe uses — fall back to the
-# real command (here, 'rm') with normal prompting.
+# $HOME itself. That's the same signal gh-api-safe uses, except that
+# here, we do not expect Claude to fall back to the regular `rm`.
 #
 # Symlinks (even ones pointing at a directory) are just unlinked, like rm
 # does — the link itself is a file, and unlinking it never touches whatever
