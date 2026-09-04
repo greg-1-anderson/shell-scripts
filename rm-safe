@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+# rm-safe — safe wrapper for 'rm'.
+#
+# Deletes individual files for real, exactly like 'rm'. For any directory
+# argument, moves it into ~/.claude-trash instead of deleting it — a
+# directory passed to rm-safe is never actually removed, only relocated.
+#
+# Exits 77 (EX_NOPERM from sysexits) when it can't confidently make an
+# argument safe: an unrecognized flag, or a target that resolves to '/' or
+# $HOME itself. That's the same signal gh-api-safe uses — fall back to the
+# real command (here, 'rm') with normal prompting.
+#
+# Symlinks (even ones pointing at a directory) are just unlinked, like rm
+# does — the link itself is a file, and unlinking it never touches whatever
+# it points to.
+
+set -euo pipefail
+
+readonly EX_NOPERM=77
+readonly SELF="${0##*/}"
+readonly TRASH_DIR="$HOME/.claude-trash"
+
+die_blocked() {
+    printf '%s: not allowed — %s\n' "$SELF" "$1" >&2
+    exit "$EX_NOPERM"
+}
+
+if [[ $# -eq 0 ]]; then
+    cat >&2 <<EOF
+Usage: $SELF [-fRrv] [--] file_or_dir ...
+
+Safe wrapper for 'rm'. Deletes files for real; moves any directory
+argument into $TRASH_DIR instead of deleting it.
+
+Exits $EX_NOPERM (EX_NOPERM) when an argument can't be made safe (an
+unrecognized flag, or a target that resolves to '/' or \$HOME).
+
+Recognized flags (accepted, but behavior is always "delete files, trash
+directories" regardless of -r/-f — they don't change what happens):
+  -f, --force        don't error on missing paths
+  -r, -R, --recursive, -d   accepted for rm-compatibility; no effect
+  -i, -I, --interactive[=WHEN]   accepted; rm-safe never prompts
+  -v, --verbose       print what happened to each argument
+  --preserve-root, --no-preserve-root   accepted; rm-safe always protects '/' and \$HOME
+  --
+EOF
+    exit 2
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 1: scan arguments — separate known-safe flags from paths, block
+# anything unrecognized.
+# ---------------------------------------------------------------------------
+
+force=false
+verbose=false
+paths=()
+end_of_flags=false
+
+for arg in "$@"; do
+    if $end_of_flags; then
+        paths+=("$arg")
+        continue
+    fi
+    case "$arg" in
+        --)
+            end_of_flags=true ;;
+        -f|--force)
+            force=true ;;
+        -v|--verbose)
+            verbose=true ;;
+        -r|-R|-d|--recursive|--dir)
+            ;;
+        -i|-I|--interactive|--interactive=*)
+            ;;
+        --preserve-root|--no-preserve-root)
+            ;;
+        -[a-zA-Z][a-zA-Z]*)
+            # Combined short flags, e.g. -rf, -fr, -rfv — only allow if every
+            # character is one we already recognize above.
+            rest="${arg#-}"
+            unknown=""
+            for ((i = 0; i < ${#rest}; i++)); do
+                c="${rest:$i:1}"
+                case "$c" in
+                    f) force=true ;;
+                    v) verbose=true ;;
+                    r|R|d|i|I) ;;
+                    *) unknown="$c" ;;
+                esac
+            done
+            [[ -z "$unknown" ]] || die_blocked "unrecognized flag '-$unknown' in '$arg'"
+            ;;
+        -*)
+            die_blocked "unrecognized flag '$arg'" ;;
+        *)
+            paths+=("$arg") ;;
+    esac
+done
+
+[[ ${#paths[@]} -gt 0 ]] || die_blocked "no file or directory operand given"
+
+# ---------------------------------------------------------------------------
+# Phase 2: act on each path — delete files, trash directories.
+# ---------------------------------------------------------------------------
+
+mkdir -p "$TRASH_DIR"
+status=0
+
+for p in "${paths[@]}"; do
+    if [[ -L "$p" ]]; then
+        rm -- "$p" && { $verbose && printf '%s: removed %s\n' "$SELF" "$p"; }
+    elif [[ -d "$p" ]]; then
+        resolved="$(cd "$p" && pwd -P)"
+        case "$resolved" in
+            "/"|"$HOME")
+                die_blocked "'$p' resolves to '$resolved' — refusing to touch a root/home directory" ;;
+        esac
+        dest="$TRASH_DIR/$(basename -- "$p")"
+        [[ -e "$dest" ]] && dest="$dest.$(date +%Y%m%dT%H%M%S)-$$"
+        mv -- "$p" "$dest"
+        $verbose && printf '%s: moved %s -> %s\n' "$SELF" "$p" "$dest"
+    elif [[ -e "$p" ]]; then
+        rm -- "$p" && { $verbose && printf '%s: removed %s\n' "$SELF" "$p"; }
+    else
+        if $force; then
+            :
+        else
+            printf '%s: %s: No such file or directory\n' "$SELF" "$p" >&2
+            status=1
+        fi
+    fi
+done
+
+exit "$status"

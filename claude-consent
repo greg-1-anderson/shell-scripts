@@ -25,12 +25,13 @@ read -r -d '' CLAUDE_MD_CONTENT << 'HEREDOC' || true
 - Never discard someone else's local changes, modified or untracked, in a git working directory unless explicitly told to. Stash them or halt and request user guidance.
 - Do not rewrite git history to avoid "messy" commit history; we will squash on merge, and failed attempts while iterating can include valuable wisdom.
 - Don't change Jira ticket status unless instructed to. e.g. deploying the fix doesn't mean Jira ticket is closed.
-- Never use rm to delete a directory, and use the -r flag with rm. You may delete individual files, but move directories to ~/.claude-trash instead of deleting them.
+- Never use rm to delete a directory, and use the -r flag with rm. You may delete individual files, but move directories to ~/.claude-trash instead of deleting them. (Enforced: plain `rm` is denied by permissions — see `rm-safe` under Tooling.)
 
 ## Tooling
 
 - Use gh for interacting with github, use acli for interacting with jira.
 - When you need to call `gh api`, run `gh-api-safe` instead (same arguments). It is a read-only safety wrapper that allows known-safe GET endpoints and blocks write operations. If `gh-api-safe` exits 77 (not allowed), fall back to `gh api` with normal prompting. Do not prompt the user before trying `gh-api-safe`; only prompt if the fallback to `gh api` is needed.
+- When you need to remove a file or directory, run `rm-safe` instead of `rm` (same arguments). It deletes files for real but moves any directory into ~/.claude-trash instead of deleting it. Plain `rm` is denied by permissions; if `rm-safe` exits 77 (not allowed — an unrecognized flag, or a target that resolves to `/` or `$HOME`), fall back to `rm` with normal prompting. Do not prompt the user before trying `rm-safe`; only prompt if the fallback to `rm` is needed.
 - When writing scripts, if all commands in the script are either allowed via permissions in settings.json, or are "for", "if", "echo" or similar, do not prompt the user, just run the script.
 - Skip prompting if a safe command pipes to a safe command (e.g. `jq`, `sed`, `head`, etc.)
 HEREDOC
@@ -108,6 +109,7 @@ SAFE_PERMISSIONS=(
   'Bash(gh search*)'
   'Bash(gh auth status)'
   'Bash(gh-api-safe*)'
+  'Bash(rm-safe*)'
   'Bash(go build*)'
   'Bash(npm test*)'
   'Bash(npm run test*)'
@@ -177,6 +179,16 @@ SAFE_PERMISSIONS=(
   'Bash(acli confluence space view*)'
 )
 
+# Denied permissions list — everything here gets added to permissions.deny.
+# 'rm' is blocked outright (flag order/spelling makes an allow-listed
+# "rm -r*"-style pattern trivially bypassable, e.g. 'rm -fr', 'rm -Rf',
+# '--recursive'); rm-safe (above) is the sanctioned replacement — it
+# deletes files for real but moves any directory into ~/.claude-trash
+# instead of deleting it.
+DENIED_PERMISSIONS=(
+  'Bash(rm *)'
+)
+
 if [[ ! -f "$SETTINGS_FILE" ]]; then
   echo "Error: $SETTINGS_FILE not found" >&2
   exit 1
@@ -195,14 +207,16 @@ if ! git -C "$CLAUDE_DIR" rev-parse --git-dir &>/dev/null; then
   git -C "$CLAUDE_DIR" commit -m "Initial commit"
 fi
 
-# Build JSON array of safe permissions
+# Build JSON arrays of safe/denied permissions
 safe_json=$(printf '%s\n' "${SAFE_PERMISSIONS[@]}" | jq -R . | jq -s .)
+denied_json=$(printf '%s\n' "${DENIED_PERMISSIONS[@]}" | jq -R . | jq -s .)
 
-# Merge safe permissions into settings.json:
-# - Add any missing items to permissions.allow (preserving existing ones)
+# Merge permissions into settings.json:
+# - Add any missing items to permissions.allow / permissions.deny (preserving existing ones)
 # - Set defaultMode to acceptEdits
-jq --argjson safe "$safe_json" '
+jq --argjson safe "$safe_json" --argjson denied "$denied_json" '
   .permissions.allow = ((.permissions.allow // []) + $safe | unique) |
+  .permissions.deny = ((.permissions.deny // []) + $denied | unique) |
   .permissions.defaultMode = "acceptEdits"
 ' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp" && mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 
