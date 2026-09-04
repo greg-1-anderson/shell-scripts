@@ -31,7 +31,7 @@ read -r -d '' CLAUDE_MD_CONTENT << 'HEREDOC' || true
 
 - Use gh for interacting with github, use acli for interacting with jira.
 - When you need to call `gh api`, run `gh-api-safe` instead (same arguments). It is a read-only safety wrapper that allows known-safe GET endpoints and blocks write operations. If `gh-api-safe` exits 77 (not allowed), fall back to `gh api` with normal prompting. Do not prompt the user before trying `gh-api-safe`; only prompt if the fallback to `gh api` is needed.
-- When you need to remove a file or directory, run `rm-safe` instead of `rm` (same arguments). It deletes files for real but moves any directory into ~/.claude-trash instead of deleting it. Plain `rm` is denied by permissions; if `rm-safe` exits 77 (not allowed — an unrecognized flag, or a target that resolves to `/` or `$HOME`), fall back to `rm` with normal prompting. Do not prompt the user before trying `rm-safe`; only prompt if the fallback to `rm` is needed.
+- When you need to remove a file or directory, run `rm-safe` instead of `rm` (same arguments). It deletes files for real but moves any directory into ~/.claude-trash instead of deleting it. Plain `rm` is denied by permissions.
 - When writing scripts, if all commands in the script are either allowed via permissions in settings.json, or are "for", "if", "echo" or similar, do not prompt the user, just run the script.
 - Skip prompting if a safe command pipes to a safe command (e.g. `jq`, `sed`, `head`, etc.)
 HEREDOC
