@@ -26,6 +26,7 @@ read -r -d '' CLAUDE_MD_CONTENT << 'HEREDOC' || true
 - Do not rewrite git history to avoid "messy" commit history; we will squash on merge, and failed attempts while iterating can include valuable wisdom.
 - Don't change Jira ticket status unless instructed to. e.g. deploying the fix doesn't mean Jira ticket is closed.
 - Never use rm to delete a directory, and use the -r flag with rm. You may delete individual files, but move directories to ~/.claude-trash instead of deleting them. (Enforced: plain `rm` is denied by permissions — see `rm-safe` under Tooling.)
+- Never use a heredoc (`<<EOF`, quoted or not) in a Bash command. A quoted delimiter is not reliable protection — a heredoc body containing backticks or other shell metacharacters can end up executed instead of staying literal text, which has caused a real unintended `rm` to run from a commit message. For multi-line content (commit messages, file contents), write it to a file with the Write tool and reference that file instead (e.g. `git commit -F <file>`).
 
 ## Tooling
 
