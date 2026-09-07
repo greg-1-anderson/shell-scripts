@@ -124,6 +124,7 @@ brew install node nodejs yarn
 brew cask install gimp
 brew install --cask sublime-text
 brew install mpg123
+brew install --cask openscad@snapshot
 
 # Danger -- don't leave this running too long, it will run away
 # with your cpu and all of your memory.  I can't stand the other
