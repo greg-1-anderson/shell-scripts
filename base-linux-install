@@ -87,7 +87,7 @@ packages["intl"]=""
 
 # packages["security"]="uif bastille"
 
-packages["network"]="ssh rsh-client nmap davfs2 curl"
+packages["network"]="ssh nmap davfs2 curl"
 
 packages["system-gui"]="perl-tk k3b wmctrl wireshark"
 
@@ -120,7 +120,7 @@ packages["mysql"]="libdbd-mysql-perl libdbd-mysql mysql-client mysql-server php-
 # mysql-doc
 
 # For phpsh, we need easy_install (python-pip), Python.h (python-dev) and ncurses (libncurses5-dev).
-packages["python"]="python-pip python-dev"
+#packages["python"]="python-pip python-dev"
 
 #
 # valgrind will find memory leaks, etc.
